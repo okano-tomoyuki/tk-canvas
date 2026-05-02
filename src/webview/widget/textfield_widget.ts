@@ -14,17 +14,17 @@ export class TextFieldWidget extends Widget {
   paint(ctx: CanvasRenderingContext2D): void {
     // --- 背景 ---
     ctx.fillStyle = "white";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(this.x, this.y, this.w, this.h);
 
     // --- 枠線 ---
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    ctx.strokeRect(this.x, this.y, this.w, this.h);
 
     // --- テキスト ---
     ctx.fillStyle = "black";
     ctx.font = "14px sans-serif";
-    ctx.fillText(this.text, this.x + 4, this.y + this.height - 6);
+    ctx.fillText(this.text, this.x + 4, this.y + this.h - 6);
 
     // --- 選択枠 ---
     if (this.selected) {
@@ -33,9 +33,19 @@ export class TextFieldWidget extends Widget {
       ctx.strokeRect(
         this.x - 2,
         this.y - 2,
-        this.width + 4,
-        this.height + 4
+        this.w + 4,
+        this.h + 4
       );
     }
   }
+
+  getProps(): Record<string, any> {
+    return {
+      x: this.x,
+      y: this.y,
+      h: this.h,
+      w: this.w,
+    };
+  }
+
 }

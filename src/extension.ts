@@ -11,6 +11,8 @@ export function activate(context: vscode.ExtensionContext) {
             {
                 enableScripts: true,
                 localResourceRoots: [
+                    vscode.Uri.joinPath(context.extensionUri, 'media'),
+                    vscode.Uri.joinPath(context.extensionUri, 'media', 'icons'),
                     vscode.Uri.joinPath(context.extensionUri, 'dist'),
                     vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview')
                 ]
@@ -26,6 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 function getWebviewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
+
+    const iconBase = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, 'media', 'icons')
+    );
+
+    const icon = (name: string) => `${iconBase}/${name}.svg`;
 
     const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview', 'main.js')
@@ -90,27 +98,18 @@ function getWebviewContent(context: vscode.ExtensionContext, panel: vscode.Webvi
 </head>
 <body>
 
+<div id="property-panel"></div>
+
+<div id="toolbar">
+    <button data-widget="rectangle"><img src="${icon("rectangle")}"></button>
+    <button data-widget="label"><img src="${icon("label")}"></button>
+    <button data-widget="button"><img src="${icon("button")}"></button>
+    <button data-widget="checkbox"><img src="${icon("checkbox")}"></button>
+    <button data-widget="textfield"><img src="${icon("textfield")}"></button>
+</div>
+
 <div id="container">
     <canvas id="designer-canvas"></canvas>
-
-    <div id="property-panel">
-        <div class="row">
-            <label>X:</label>
-            <input id="prop-x" type="number">
-        </div>
-        <div class="row">
-            <label>Y:</label>
-            <input id="prop-y" type="number">
-        </div>
-        <div class="row">
-            <label>Width:</label>
-            <input id="prop-w" type="number">
-        </div>
-        <div class="row">
-            <label>Height:</label>
-            <input id="prop-h" type="number">
-        </div>
-    </div>
 </div>
 
 <script src="${scriptUri}"></script>

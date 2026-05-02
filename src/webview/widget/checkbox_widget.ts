@@ -49,9 +49,19 @@ export class CheckBoxWidget extends Widget {
       ctx.strokeRect(
         this.x - 2,
         this.y - 2,
-        this.width + 4,
-        this.height + 4
+        this.w + 4,
+        this.h + 4
       );
     }
   }
+
+  getProps(): Record<string, any> {
+    return {
+      x : this.x,
+      y : this.y,
+      h : this.h,
+      w : this.w,
+    };
+  }
+
 }

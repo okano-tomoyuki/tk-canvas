@@ -21,6 +21,8 @@ export class DesignerCanvas {
   private prevX = 0;
   private prevY = 0;
 
+  private isDragging : boolean = false;
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
@@ -46,6 +48,34 @@ export class DesignerCanvas {
     canvas.addEventListener("mousemove", (e) => this.onMouseMove(e));
     canvas.addEventListener("mouseup", (e) => this.onMouseUp(e));
   }
+
+  public addWidget(type: string) {
+      let w: Widget | null = null;
+
+      switch (type) {
+          case "rectangle":
+              w = new RectangleWidget(50, 50, 100, 80);
+              break;
+          case "label":
+              w = new LabelWidget(50, 50);
+              break;
+          case "button":
+              w = new ButtonWidget(50, 50, 120, 40);
+              break;
+          case "checkbox":
+              w = new CheckBoxWidget(50, 50);
+              break;
+          case "textfield":
+              w = new TextFieldWidget(50, 50);
+              break;
+      }
+
+      if (w) {
+          this.widgets.push(w);
+          this.render();
+      }
+  }
+
 
   // -----------------------------
   // レンダリング
@@ -106,6 +136,7 @@ export class DesignerCanvas {
     }
 
     if (hit) {
+      this.isDragging = true;
       this.selectedItems = [hit];
       hit.setSelected(true);
 
@@ -113,6 +144,7 @@ export class DesignerCanvas {
         this.propertyPanel.setWidget(hit);
       }
     } else {
+      this.isDragging = false;
       for (const w of this.widgets) {
         w.setSelected(false);
       }
@@ -127,6 +159,10 @@ export class DesignerCanvas {
   }
 
   private onMouseMove(e: MouseEvent) {
+    if (!this.isDragging) {
+      return;
+    }
+
     if (this.selectedItems.length === 0) {
       return;
     }
@@ -152,6 +188,7 @@ export class DesignerCanvas {
   }
 
   private onMouseUp(e: MouseEvent) {
+    this.isDragging = false;
     for (const w of this.widgets) {
       w.setSelected(false);
     }

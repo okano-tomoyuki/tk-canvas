@@ -23,6 +23,13 @@ window.addEventListener("DOMContentLoaded", () => {
   // DesignerCanvas → PropertyPanel への通知を有効化
   designer.setPropertyPanel(propertyPanel);
 
+  document.querySelectorAll("#toolbar button").forEach(btn => {
+      btn.addEventListener("click", () => {
+          const type = btn.getAttribute("data-widget");
+          designer.addWidget(type!);
+      });
+  });
+
   // 初回描画
   designer.render();
 });

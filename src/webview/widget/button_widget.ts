@@ -1,40 +1,42 @@
+import { Property } from "./property";
 import { Widget } from "./widget";
 
 export class ButtonWidget extends Widget {
-  private text: string = "Button";
+  private caption: string = "Button";
+  private fill: string = "#000000";
+  private borderStyle: string = "solid";
 
-  constructor(x: number, y: number, w: number, h: number) {
-    super(x, y, w, h);
-  }
-
-  setText(text: string) {
-    this.text = text;
+  constructor(props?: Record<string, any>) {
+    super();
+    if (props) {
+      this.assign(props);
+    }
   }
 
   paint(ctx: CanvasRenderingContext2D): void {
     // --- 背景 ---
     ctx.fillStyle = "#D3D3D3"; // Color.LIGHT_GRAY
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // --- 枠線 ---
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
-    ctx.strokeRect(this.x, this.y, this.w, this.h);
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
 
     // --- テキスト（中央寄せ）---
     ctx.fillStyle = "black";
     ctx.font = "14px sans-serif"; // Java のデフォルトに近い
 
-    const metrics = ctx.measureText(this.text);
-    const textw = metrics.width;
+    const metrics = ctx.measureText(this.caption);
+    const textWidth = metrics.width;
 
     // Canvas には ascent がないので近似値を使う
-    const texth = metrics.actualBoundingBoxAscent ?? 12;
+    const textHeight = metrics.actualBoundingBoxAscent ?? 12;
 
-    const tx = this.x + (this.w - textw) / 2;
-    const ty = this.y + (this.h + texth) / 2 - 2;
+    const tx = this.x + (this.width - textWidth) / 2;
+    const ty = this.y + (this.height + textHeight) / 2 - 2;
 
-    ctx.fillText(this.text, tx, ty);
+    ctx.fillText(this.caption, tx, ty);
 
     // --- 選択枠 ---
     if (this.selected) {
@@ -43,22 +45,24 @@ export class ButtonWidget extends Widget {
       ctx.strokeRect(
         this.x - 2,
         this.y - 2,
-        this.w + 4,
-        this.h + 4
+        this.width + 4,
+        this.height + 4
       );
     }
   }
 
-  getProps(): Record<string, any> {
-    return {
-      enable : this.enable,
-      visible : this.visible,
-      text : this.text,
-      x : this.x,
-      y : this.y,
-      h : this.h,
-      w : this.w,
-    };
+  getProperties(): Property<any>[] {
+    return [
+      new Property("enable", "boolean", this.enable),
+      new Property("visible", "boolean", this.visible),
+      new Property("x", "number", this.x),
+      new Property("y", "number", this.y),
+      new Property("width", "number", this.width),
+      new Property("height", "number", this.height),
+      new Property("caption", "string", this.caption),
+      new Property("fill", "color", this.fill),
+      new Property("borderStyle", "enum", this.borderStyle, ["solid", "dashed", "none"])
+    ];
   }
 
 }

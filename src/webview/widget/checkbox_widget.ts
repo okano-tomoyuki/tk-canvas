@@ -1,19 +1,17 @@
+import { Property } from "./property";
 import { Widget } from "./widget";
 
 export class CheckBoxWidget extends Widget {
   private checked: boolean = false;
-  private label: string = "CheckBox";
+  private caption: string = "CheckBox";
 
-  constructor(x: number, y: number) {
-    super(x, y, 120, 20); // Java と同じ固定サイズ
-  }
-
-  setChecked(value: boolean) {
-    this.checked = value;
-  }
-
-  setLabel(text: string) {
-    this.label = text;
+  constructor(props?: Record<string, any>) {
+    super();
+    this.width = 120;
+    this.height = 20;
+    if (props) {
+      this.assign(props);
+    }
   }
 
   paint(ctx: CanvasRenderingContext2D): void {
@@ -40,7 +38,7 @@ export class CheckBoxWidget extends Widget {
     // --- ラベル ---
     ctx.fillStyle = "black";
     ctx.font = "14px sans-serif";
-    ctx.fillText(this.label, this.x + 22, this.y + 14);
+    ctx.fillText(this.caption, this.x + 22, this.y + 14);
 
     // --- 選択枠 ---
     if (this.selected) {
@@ -49,19 +47,23 @@ export class CheckBoxWidget extends Widget {
       ctx.strokeRect(
         this.x - 2,
         this.y - 2,
-        this.w + 4,
-        this.h + 4
+        this.width + 4,
+        this.height + 4
       );
     }
   }
 
-  getProps(): Record<string, any> {
-    return {
-      x : this.x,
-      y : this.y,
-      h : this.h,
-      w : this.w,
-    };
+  getProperties(): Property<any>[] {
+    return [
+      new Property("enable", "boolean", this.enable),
+      new Property("visible", "boolean", this.visible),
+      new Property("x", "number", this.x),
+      new Property("y", "number", this.y),
+      new Property("width", "number", this.width),
+      new Property("height", "number", this.height),
+      new Property("caption", "string", this.caption),
+      new Property("checked", "boolean", this.checked)
+    ];
   }
 
 }

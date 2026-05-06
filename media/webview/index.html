@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none';
+               img-src ${cspSource} https:;
+               style-src ${cspSource} 'unsafe-inline';
+               script-src ${cspSource};">
+<link rel="stylesheet" href="${styleUri}">
+</head>
+<body>
+
+<div id="container">
+    <div id="toolbar">
+        <button data-widget="button"><img src="${iconButton}"></button>
+        <button data-widget="checkbox"><img src="${iconCheckbox}"></button>
+        <button data-widget="label"><img src="${iconLabel}"></button>
+        <button data-widget="rectangle"><img src="${iconRectangle}"></button>
+        <button data-widget="textfield"><img src="${iconTextfield}"></button>
+        <button id="save-button">保存</button>
+        <button id="load-button">読込</button>
+    </div>
+    <div id="property-panel"></div>
+    <canvas id="designer-canvas"></canvas>
+</div>
+
+<script src="${scriptUri}"></script>
+</body>
+</html>
+

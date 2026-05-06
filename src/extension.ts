@@ -2,118 +2,125 @@ import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
 
-    const disposable = vscode.commands.registerCommand('tk-designer.openDesigner', () => {
+  const disposable = vscode.commands.registerCommand('tk-designer.openDesigner', async () => {
 
-        const panel = vscode.window.createWebviewPanel(
-            'tkDesigner',
-            'TK Designer',
-            vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                localResourceRoots: [
-                    vscode.Uri.joinPath(context.extensionUri, 'media'),
-                    vscode.Uri.joinPath(context.extensionUri, 'media', 'icons'),
-                    vscode.Uri.joinPath(context.extensionUri, 'dist'),
-                    vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview')
-                ]
+    const panel = vscode.window.createWebviewPanel(
+      'tkDesigner',
+      'TK Designer',
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [
+          vscode.Uri.joinPath(context.extensionUri, 'media'),
+          vscode.Uri.joinPath(context.extensionUri, 'media', 'webview'),
+          vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview')
+        ]
+      }
+    );
+
+    const html = await getWebviewContent(context, panel);
+
+    // ★ デバッグ：最終 HTML を出力（VS Code の DevTools で確認可能）
+    console.log("===== Webview HTML (final) =====");
+    console.log(html);
+
+    panel.webview.html = html;
+
+    // Webview → Extension のメッセージ受信
+    panel.webview.onDidReceiveMessage(async msg => {
+      switch (msg.type) {
+        case 'save-json': {
+          const json = msg.data;
+
+          const uri = await vscode.window.showSaveDialog({
+            filters: { 'JSON Files': ['json'] },
+            saveLabel: '保存'
+          });
+
+          if (!uri) {
+            vscode.window.showInformationMessage("保存がキャンセルされました");
+            return;
+          }
+
+          // ★ Buffer を使わずに保存する（Webview 拡張の正しい方法）
+          const encoder = new TextEncoder();
+          const bytes = encoder.encode(JSON.stringify(json, null, 2));
+
+          await vscode.workspace.fs.writeFile(uri, bytes);
+
+          vscode.window.showInformationMessage("保存しました: " + uri.fsPath);
+          break;
+        }
+        // --- 読込処理（新規） ---
+        case 'request-load': {
+            const uri = await vscode.window.showOpenDialog({
+                canSelectMany: false,
+                filters: { 'JSON Files': ['json'] },
+                openLabel: '読込'
+            });
+
+            if (!uri || uri.length === 0) {
+              return;
             }
-        );
 
-        panel.webview.html = getWebviewContent(context, panel);
+            const bytes = await vscode.workspace.fs.readFile(uri[0]);
+            const jsonString = new TextDecoder('utf8').decode(bytes);
+
+            // Webview に返す
+            panel.webview.postMessage({
+                type: "load-json",
+                data: jsonString
+            });
+
+            break;
+        }
+
+      }
     });
 
-    context.subscriptions.push(disposable);
+  });
+
+  context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
-function getWebviewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
 
-    const iconBase = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, 'media', 'icons')
-    );
+// ------------------------------
+// Webview HTML 読み込み（正攻法）
+// ------------------------------
+async function getWebviewContent(
+  context: vscode.ExtensionContext,
+  panel: vscode.WebviewPanel
+): Promise<string> {
 
-    const icon = (name: string) => `${iconBase}/${name}.svg`;
+  const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'index.html');
+  const htmlBytes = await vscode.workspace.fs.readFile(htmlPath);
+  let html = new TextDecoder('utf-8').decode(htmlBytes);
 
-    const scriptUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview', 'main.js')
-    );
+  const cspSource = panel.webview.cspSource;
 
-    const styleUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview', 'style.css')
-    );
+  // Webview 用の URI を生成
+  const scriptUri = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview', 'main.js')
+  );
 
-    return /* html */ `
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8" />
-<link rel="stylesheet" href="${styleUri}">
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-        font-family: sans-serif;
-    }
+  const styleUri = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'style.css')
+  );
 
-    #container {
-        display: flex;
-        width: 100%;
-        height: 100%;
-    }
+  const iconBase = vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'icons');
 
-    #designer-canvas {
-        flex: 1;
-        border: 1px solid #ccc;
-        background: white;
-        width: 80%;
-        height: 500px;
-        display: block;
-    }
+  const iconRectangle = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'rectangle.svg'));
+  const iconLabel = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'label.svg'));
 
-    #property-panel {
-        width: 220px;
-        padding: 10px;
-        border-left: 1px solid #ccc;
-        background: #f7f7f7;
-        box-sizing: border-box;
-    }
+  // プレースホルダ置換（正攻法）
+  html = html
+    .replace(/\$\{cspSource\}/g, cspSource)
+    .replace(/\$\{scriptUri\}/g, scriptUri.toString())
+    .replace(/\$\{styleUri\}/g, styleUri.toString())
+    .replace(/\$\{iconRectangle\}/g, iconRectangle.toString())
+    .replace(/\$\{iconLabel\}/g, iconLabel.toString());
 
-    .row {
-        margin-bottom: 10px;
-    }
-
-    label {
-        display: inline-block;
-        width: 60px;
-    }
-
-    input[type="number"] {
-        width: 120px;
-    }
-</style>
-</head>
-<body>
-
-<div id="property-panel"></div>
-
-<div id="toolbar">
-    <button data-widget="rectangle"><img src="${icon("rectangle")}"></button>
-    <button data-widget="label"><img src="${icon("label")}"></button>
-    <button data-widget="button"><img src="${icon("button")}"></button>
-    <button data-widget="checkbox"><img src="${icon("checkbox")}"></button>
-    <button data-widget="textfield"><img src="${icon("textfield")}"></button>
-</div>
-
-<div id="container">
-    <canvas id="designer-canvas"></canvas>
-</div>
-
-<script src="${scriptUri}"></script>
-</body>
-</html>
-`;
+  return html;
 }

@@ -21,7 +21,7 @@ export class DesignerCanvas {
   private prevX = 0;
   private prevY = 0;
 
-  private isDragging : boolean = false;
+  private isDragging: boolean = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -30,19 +30,15 @@ export class DesignerCanvas {
     // 裏バッファ
     this.offscreen = document.createElement("canvas");
     this.offctx = this.offscreen.getContext("2d")!;
-
     this.resize();
 
-    // --- 初期ウィジェット ---
-    this.widgets.push(new RectangleWidget(50, 50, 100, 80));
-    this.widgets.push(new RectangleWidget(200, 120, 120, 90));
+    this.widgets.push(new RectangleWidget({ x: 50, y: 50, width: 100, height: 80 }));
+    this.widgets.push(new RectangleWidget({ x: 200, y: 120, width: 120, height: 90 }));
+    this.widgets.push(new LabelWidget({ x: 50, y: 200 }));
+    this.widgets.push(new ButtonWidget({ x: 200, y: 200, width: 120, height: 40 }));
+    this.widgets.push(new CheckBoxWidget({ x: 50, y: 260 }));
+    this.widgets.push(new TextFieldWidget({ x: 200, y: 260 }));
 
-    this.widgets.push(new LabelWidget(50, 200));
-    this.widgets.push(new ButtonWidget(200, 200, 120, 40));
-    this.widgets.push(new CheckBoxWidget(50, 260));
-    this.widgets.push(new TextFieldWidget(200, 260));
-
-    // --- イベント ---
     window.addEventListener("resize", () => this.resize());
     canvas.addEventListener("mousedown", (e) => this.onMouseDown(e));
     canvas.addEventListener("mousemove", (e) => this.onMouseMove(e));
@@ -50,32 +46,69 @@ export class DesignerCanvas {
   }
 
   public addWidget(type: string) {
-      let w: Widget | null = null;
+    let w: Widget | null = null;
 
-      switch (type) {
-          case "rectangle":
-              w = new RectangleWidget(50, 50, 100, 80);
-              break;
-          case "label":
-              w = new LabelWidget(50, 50);
-              break;
-          case "button":
-              w = new ButtonWidget(50, 50, 120, 40);
-              break;
-          case "checkbox":
-              w = new CheckBoxWidget(50, 50);
-              break;
-          case "textfield":
-              w = new TextFieldWidget(50, 50);
-              break;
-      }
+    switch (type) {
+      case "rectangle":
+        w = new RectangleWidget({ x: 50, y: 50, width: 100, height: 80 });
+        break;
+      case "label":
+        w = new LabelWidget({ x: 50, y: 50 });
+        break;
+      case "button":
+        w = new ButtonWidget({ x: 50, y: 50, width: 120, height: 40 });
+        break;
+      case "checkbox":
+        w = new CheckBoxWidget({ x: 50, y: 50 });
+        break;
+      case "textfield":
+        w = new TextFieldWidget({ x: 50, y: 50 });
+        break;
+    }
 
-      if (w) {
-          this.widgets.push(w);
-          this.render();
-      }
+    if (w) {
+      this.widgets.push(w);
+      this.render();
+    }
   }
 
+  public save(){
+    return this.widgets.map(w => this.serializeWidget(w));
+    // return JSON.stringify(data, null, 2);
+  }
+
+  public load(json: string) {
+    const list: any[] = JSON.parse(json);
+    this.widgets = list.map(item => this.createWidget(item.type, item.props));
+    this.render();
+  }
+
+  private serializeWidget(widget: Widget): any {
+    return {
+      type: widget.constructor.name,
+      props: this.extractProps(widget),
+      // children: widget.children.map(c => this.serializeWidget(c))
+    };
+  }
+
+  private extractProps(widget: Widget): Record<string, any> {
+    const props: Record<string, any> = {};
+    for (const p of widget.getProperties()) {
+      props[p.key] = p.value;
+    }
+    return props;
+  }
+
+  private createWidget(type: string, props: Record<string, any>): Widget {
+    switch (type) {
+      case "RectangleWidget": return new RectangleWidget(props);
+      case "LabelWidget": return new LabelWidget(props);
+      case "ButtonWidget": return new ButtonWidget(props);
+      case "CheckBoxWidget": return new CheckBoxWidget(props);
+      case "TextFieldWidget": return new TextFieldWidget(props);
+    }
+    throw new Error("Unknown widget type: " + type);
+  }
 
   // -----------------------------
   // レンダリング

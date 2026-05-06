@@ -1,25 +1,26 @@
+import { Property } from "./property";
 import { Widget } from "./widget";
 
 export class LabelWidget extends Widget {
-  private text: string = "Label";
+  private caption: string = "Label";
 
-  constructor(x: number, y: number) {
-    super(x, y, 80, 20); // Java と同じ固定サイズ
-  }
-
-  setText(text: string) {
-    this.text = text;
+  constructor(props?: Record<string, any>) {
+    super();
+    this.width = 80;
+    this.height = 20;
+    if (props) {
+      this.assign(props);
+    }
   }
 
   paint(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = "black";
     ctx.font = "14px sans-serif";
 
-    // Java の FontMetrics.getAscent() に相当
-    const metrics = ctx.measureText(this.text);
+    const metrics = ctx.measureText(this.caption);
     const ascent = metrics.actualBoundingBoxAscent ?? 12;
 
-    ctx.fillText(this.text, this.x, this.y + ascent);
+    ctx.fillText(this.caption, this.x, this.y + ascent);
 
     // --- 選択枠 ---
     if (this.selected) {
@@ -28,18 +29,21 @@ export class LabelWidget extends Widget {
       ctx.strokeRect(
         this.x - 2,
         this.y - 2,
-        this.w + 4,
-        this.h + 4
+        this.width + 4,
+        this.height + 4
       );
     }
   }
 
-  getProps(): Record<string, any> {
-    return {
-      x: this.x,
-      y: this.y,
-      h: this.h,
-      w: this.w,
-    };
+  getProperties(): Property<any>[] {
+    return [
+      new Property("enable", "boolean", this.enable),
+      new Property("visible", "boolean", this.visible),
+      new Property("x", "number", this.x),
+      new Property("y", "number", this.y),
+      new Property("width", "number", this.width),
+      new Property("height", "number", this.height),
+      new Property("caption", "string", this.caption),
+    ];
   }
 }

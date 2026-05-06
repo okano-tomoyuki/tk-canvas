@@ -22,18 +22,17 @@ export class PropertyPanel {
       return;
     }
 
-    const props = widget.getProps();
+    const props = widget.getProperties();
 
-    for (const key of Object.keys(props)) {
-      const value = props[key];
+    for (const prop of props) {
       const row = document.createElement("div");
       row.className = "row";
       const label = document.createElement("label");
-      label.textContent = key;
-      const input = this.createInput(key, value);
+      label.textContent = prop.key;
+      const input = this.createInput(prop.key, prop.value);
       input.addEventListener("input", () => {
-        const newValue = this.parseValue(input, value);
-        widget.setProps(key, newValue);
+        const newValue = this.parseValue(input, prop.value);
+        widget.setProperty(prop.key, newValue);
         this.canvas?.render();
       });
 

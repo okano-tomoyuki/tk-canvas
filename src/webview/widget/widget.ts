@@ -1,53 +1,51 @@
+import { Property } from "./property";
+
 export abstract class Widget {
   public visible : boolean = true;
   public enable : boolean = true;
-  public x: number;
-  public y: number;
-  public w: number;
-  public h: number;
+  public x: number = 0;
+  public y: number = 0;
+  public width: number = 0;
+  public height: number = 0;
 
   protected selected: boolean = false;
 
-  constructor(x: number, y: number, w: number, h: number) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-  }
+  constructor() {}
 
   // --- 描画 ---
-  abstract paint(ctx: CanvasRenderingContext2D): void;
+  public abstract paint(ctx: CanvasRenderingContext2D): void;
 
-  abstract getProps(): Record<string, any>;
+  public abstract getProperties(): Property<any>[];
 
-  setProps(key: string, value : any): void {
+  protected assign(props: Record<string, any>) {
+    for (const key of Object.keys(props)) {
+      if (key in this) {
+        (this as any)[key] = props[key];
+      }
+    }
+  }
+
+  public setProperty(key: string, value : any): void {
     (this as any)[key] = value;
   }
 
   // --- ヒットテスト ---
-  contains(px: number, py: number): boolean {
-    return px >= this.x && px <= this.x + this.w &&
-      py >= this.y && py <= this.y + this.h;
+  public contains(px: number, py: number): boolean {
+    return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height;
   }
 
   // --- 移動 ---
-  move(dx: number, dy: number): void {
+  public move(dx: number, dy: number): void {
     this.x += dx;
     this.y += dy;
   }
 
   // --- 選択状態 ---
-  setSelected(selected: boolean): void {
+  public setSelected(selected: boolean): void {
     this.selected = selected;
   }
 
-  isSelected(): boolean {
+  public isSelected(): boolean {
     return this.selected;
   }
-
-  // --- ゲッター ---
-  getX(): number { return this.x; }
-  getY(): number { return this.y; }
-  getW(): number { return this.w; }
-  getH(): number { return this.h; }
 }

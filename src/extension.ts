@@ -19,11 +19,6 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     const html = await getWebviewContent(context, panel);
-
-    // ★ デバッグ：最終 HTML を出力（VS Code の DevTools で確認可能）
-    console.log("===== Webview HTML (final) =====");
-    console.log(html);
-
     panel.webview.html = html;
 
     // Webview → Extension のメッセージ受信
@@ -85,14 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() { }
 
-
-// ------------------------------
-// Webview HTML 読み込み（正攻法）
-// ------------------------------
-async function getWebviewContent(
-  context: vscode.ExtensionContext,
-  panel: vscode.WebviewPanel
-): Promise<string> {
+async function getWebviewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): Promise<string> {
 
   const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'index.html');
   const htmlBytes = await vscode.workspace.fs.readFile(htmlPath);
@@ -111,16 +99,22 @@ async function getWebviewContent(
 
   const iconBase = vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'icons');
 
-  const iconRectangle = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'rectangle.svg'));
+  const iconButton = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'button.svg'));
+  const iconCheckbox = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'checkbox.svg'));
   const iconLabel = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'label.svg'));
+  const iconPanel = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'panel.svg'));
+  const iconTextfield = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'textfield.svg'));
 
   // プレースホルダ置換（正攻法）
   html = html
     .replace(/\$\{cspSource\}/g, cspSource)
     .replace(/\$\{scriptUri\}/g, scriptUri.toString())
     .replace(/\$\{styleUri\}/g, styleUri.toString())
-    .replace(/\$\{iconRectangle\}/g, iconRectangle.toString())
-    .replace(/\$\{iconLabel\}/g, iconLabel.toString());
+    .replace(/\$\{iconButton\}/g, iconButton.toString())
+    .replace(/\$\{iconCheckbox\}/g, iconCheckbox.toString())
+    .replace(/\$\{iconLabel\}/g, iconLabel.toString())
+    .replace(/\$\{iconPanel\}/g, iconPanel.toString())
+    .replace(/\$\{iconTextfield\}/g, iconTextfield.toString());
 
   return html;
 }

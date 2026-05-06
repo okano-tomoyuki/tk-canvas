@@ -1,21 +1,31 @@
 import { Property } from "./property";
 
 export abstract class Widget {
-  public visible : boolean = true;
-  public enable : boolean = true;
-  public x: number = 0;
-  public y: number = 0;
-  public width: number = 0;
-  public height: number = 0;
+  parent: Widget | null = null;
+  children: Widget[] = [];
+  visible : boolean = true;
+  enable : boolean = true;
+  x: number = 0;
+  y: number = 0;
+  width: number = 0;
+  height: number = 0;
 
   protected selected: boolean = false;
 
   constructor() {}
 
   // --- 描画 ---
-  public abstract paint(ctx: CanvasRenderingContext2D): void;
+  abstract paint(ctx: CanvasRenderingContext2D): void;
 
-  public abstract getProperties(): Property<any>[];
+  abstract getProperties(): Property<any>[];
+
+  canHaveChildren(): boolean {
+    return false; // デフォルトは子を持てない
+  }
+
+  canBeChild(): boolean {
+    return true; // デフォルトは子になれる
+  }
 
   protected assign(props: Record<string, any>) {
     for (const key of Object.keys(props)) {
@@ -25,27 +35,47 @@ export abstract class Widget {
     }
   }
 
-  public setProperty(key: string, value : any): void {
+  setProperty(key: string, value : any): void {
     (this as any)[key] = value;
   }
 
   // --- ヒットテスト ---
-  public contains(px: number, py: number): boolean {
-    return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height;
+  contains(px: number, py: number): boolean {
+    const ax = this.getAbsoluteX();
+    const ay = this.getAbsoluteY();
+
+    return (
+      px >= ax &&
+      px <= ax + this.width &&
+      py >= ay &&
+      py <= ay + this.height
+    );
   }
 
   // --- 移動 ---
-  public move(dx: number, dy: number): void {
+  move(dx: number, dy: number): void {
     this.x += dx;
     this.y += dy;
   }
 
   // --- 選択状態 ---
-  public setSelected(selected: boolean): void {
+  setSelected(selected: boolean): void {
     this.selected = selected;
+    for (const child of this.children) {
+      child.setSelected(selected);
+    }
   }
 
-  public isSelected(): boolean {
+  isSelected(): boolean {
     return this.selected;
   }
+
+  getAbsoluteX(): number {
+    return this.parent ? this.parent.getAbsoluteX() + this.x : this.x;
+  }
+
+  getAbsoluteY(): number {
+    return this.parent ? this.parent.getAbsoluteY() + this.y : this.y;
+  }
+
 }

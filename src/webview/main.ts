@@ -1,5 +1,6 @@
 import { DesignerCanvas } from "./designer_canvas";
 import { PropertyPanel } from "./property_panel";
+import { WidgetTree } from "./widget_tree";
 
 declare function acquireVsCodeApi(): {
   postMessage(msg: any): void;
@@ -11,29 +12,26 @@ window.addEventListener("DOMContentLoaded", () => {
   // --- HTML 要素取得 ---
   const canvas = document.getElementById("designer-canvas") as HTMLCanvasElement;
   const panelElement = document.getElementById("property-panel");
+  const treeElement = document.getElementById("widget-tree") as HTMLElement;
 
   if (!canvas || !panelElement) {
     console.error("Canvas または PropertyPanel の HTML が見つかりません");
     return;
   }
 
-  // --- DesignerCanvas 作成 ---
   const designer = new DesignerCanvas(canvas);
-
-  // --- PropertyPanel 作成 ---
-  const propertyPanel = new PropertyPanel();
-
-  // PropertyPanel は HTML 内の input を使うので、HTML 側に panelElement が必要
-  propertyPanel.setCanvas(designer);
+  const propertyPanel = new PropertyPanel(panelElement, designer);
+  const widgetTree = new WidgetTree(treeElement, designer);
 
   // DesignerCanvas → PropertyPanel への通知を有効化
   designer.setPropertyPanel(propertyPanel);
+  designer.setTreeView(widgetTree);
 
   document.querySelectorAll("#toolbar button").forEach(btn => {
-      btn.addEventListener("click", () => {
-          const type = btn.getAttribute("data-widget");
-          designer.addWidget(type!);
-      });
+    btn.addEventListener("click", () => {
+      const type = btn.getAttribute("data-widget");
+      designer.addWidget(type!);
+    });
   });
 
   // --- 保存ボタン ---

@@ -18,7 +18,7 @@ body {
     border: 1px solid #ccc;
     background: white;
     width: 80%;
-    height: 500px;
+    height: 100%;
     display: block;
 }
 
@@ -28,6 +28,20 @@ body {
     border-left: 1px solid #ccc;
     background: #f7f7f7;
     box-sizing: border-box;
+}
+
+#widget-tree {
+    width: 420px;
+    padding: 10px;
+    border-left: 1px solid #ccc;
+    background: #f7f7f7;
+    box-sizing: border-box;
+      color: #222;
+
+}
+
+.widget-tree li span {
+  color: #0078d4; /* ノード名だけ色変更 */
 }
 
 .row {

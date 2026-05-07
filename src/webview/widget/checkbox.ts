@@ -44,17 +44,6 @@ export class Checkbox extends Widget {
     ctx.font = "14px sans-serif";
     ctx.fillText(this.caption, ax + 22, ay + 14);
 
-    // --- 選択枠 ---
-    if (this.selected) {
-      ctx.strokeStyle = "rgb(0, 120, 215)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        ax - 2,
-        ay - 2,
-        this.width + 4,
-        this.height + 4
-      );
-    }
   }
 
   getProperties(): Property<any>[] {

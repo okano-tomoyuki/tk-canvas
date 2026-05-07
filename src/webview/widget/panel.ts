@@ -29,18 +29,6 @@ export class Panel extends Widget {
     ctx.lineWidth = 1;
     ctx.strokeRect(ax, ay, this.width, this.height);
 
-    // --- 選択状態の可視化 ---
-    if (this.selected) {
-      ctx.strokeStyle = "rgb(0, 120, 215)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        ax - 2,
-        ay - 2,
-        this.width + 4,
-        this.height + 4
-      );
-    }
-
     // --- ★ 子 Widget の描画 ---
     for (const child of this.children) {
       child.paint(ctx);

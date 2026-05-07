@@ -10,8 +10,6 @@ export abstract class Widget {
   width: number = 0;
   height: number = 0;
 
-  protected selected: boolean = false;
-
   constructor() {}
 
   // --- 描画 ---
@@ -56,18 +54,6 @@ export abstract class Widget {
   move(dx: number, dy: number): void {
     this.x += dx;
     this.y += dy;
-  }
-
-  // --- 選択状態 ---
-  setSelected(selected: boolean): void {
-    this.selected = selected;
-    for (const child of this.children) {
-      child.setSelected(selected);
-    }
-  }
-
-  isSelected(): boolean {
-    return this.selected;
   }
 
   getAbsoluteX(): number {

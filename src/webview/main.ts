@@ -27,6 +27,7 @@ window.addEventListener("DOMContentLoaded", () => {
   designer.setPropertyPanel(propertyPanel);
   designer.setTreeView(widgetTree);
 
+  // Widget追加ボタン
   document.querySelectorAll("#toolbar button").forEach(btn => {
     btn.addEventListener("click", () => {
       const type = btn.getAttribute("data-widget");
@@ -34,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- 保存ボタン ---
+  // 保存ボタン
   const vscode = acquireVsCodeApi();
   const saveButton = document.getElementById("save-button");
   saveButton?.addEventListener("click", () => {
@@ -42,12 +43,12 @@ window.addEventListener("DOMContentLoaded", () => {
     vscode.postMessage({ type: "save-json", data: json });
   });
 
-  // --- 読込（Webview → Extension）---
+  // 読込（Webview → Extension）
   document.getElementById("load-button")?.addEventListener("click", () => {
     vscode.postMessage({ type: "request-load" });
   });
 
-  // --- 読込（Extension → Webview）---
+  // 読込（Extension → Webview）
   window.addEventListener("message", event => {
     const msg = event.data;
 

@@ -26,18 +26,6 @@ export class Label extends Widget {
 
     // --- テキスト描画（絶対座標）---
     ctx.fillText(this.caption, ax, ay + ascent);
-
-    // --- 選択枠（絶対座標）---
-    if (this.selected) {
-      ctx.strokeStyle = "rgb(0, 120, 215)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        ax - 2,
-        ay - 2,
-        this.width + 4,
-        this.height + 4
-      );
-    }
   }
 
   getProperties(): Property<any>[] {

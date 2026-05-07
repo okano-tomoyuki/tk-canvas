@@ -31,18 +31,6 @@ export class Textfield extends Widget {
     ctx.fillStyle = "black";
     ctx.font = "14px sans-serif";
     ctx.fillText(this.text, ax + 4, ay + this.height - 6);
-
-    // --- 選択枠 ---
-    if (this.selected) {
-      ctx.strokeStyle = "rgb(0, 120, 215)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        ax - 2,
-        ay - 2,
-        this.width + 4,
-        this.height + 4
-      );
-    }
   }
 
   getProperties(): Property<any>[] {

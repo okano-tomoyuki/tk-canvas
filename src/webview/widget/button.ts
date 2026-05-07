@@ -39,18 +39,6 @@ export class Button extends Widget {
     const ty = ay + (this.height + textHeight) / 2 - 2;
 
     ctx.fillText(this.caption, tx, ty);
-
-    // --- 選択枠 ---
-    if (this.selected) {
-      ctx.strokeStyle = "rgb(0, 120, 215)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        ax - 2,
-        ay - 2,
-        this.width + 4,
-        this.height + 4
-      );
-    }
   }
 
   getProperties(): Property<any>[] {

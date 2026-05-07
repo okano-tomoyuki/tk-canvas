@@ -10,28 +10,18 @@ import { WidgetTree } from "./widget_tree";
 export class DesignerCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-
   private offscreen: HTMLCanvasElement;
   private offctx: CanvasRenderingContext2D;
-
   widgets: Widget[] = [];
-  private selectedItems: Widget[] = [];
-
+  selectedItems: Widget[] = [];
   private propertyPanel: PropertyPanel | null = null;
   private tree: WidgetTree | null = null;
-
   private prevX = 0;
   private prevY = 0;
-
   private isDragging: boolean = false;
-
-  // -----------------------------
-  // ★ リサイズ用フィールド
-  // -----------------------------
   private resizeHandles: { x: number, y: number, dir: string }[] = [];
   private resizing: boolean = false;
   private resizeDir: string = "";
-
   private startX = 0;
   private startY = 0;
   private startW = 0;
@@ -160,7 +150,9 @@ export class DesignerCanvas {
 
     // ★ 選択中の Widget にリサイズハンドルを描画
     if (this.selectedItems.length === 1) {
-      this.drawResizeHandles(this.offctx, this.selectedItems[0]);
+      const w = this.selectedItems[0];
+      this.drawSelectionFrame(this.offctx, w);
+      this.drawResizeHandles(this.offctx, w);
     }
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -178,6 +170,20 @@ export class DesignerCanvas {
     for (const widget of this.widgets) {
       widget.paint(this.offctx);
     }
+  }
+
+  private drawSelectionFrame(ctx: CanvasRenderingContext2D, w: Widget) {
+    const ax = w.getAbsoluteX();
+    const ay = w.getAbsoluteY();    
+
+    ctx.strokeStyle = "rgb(0, 120, 215)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      ax - 2,
+      ay - 2,
+      w.width + 4,
+      w.height + 4
+    );    
   }
 
   private drawResizeHandles(ctx: CanvasRenderingContext2D, w: Widget) {
@@ -240,7 +246,7 @@ export class DesignerCanvas {
     this.prevX = x;
     this.prevY = y;
 
-    // ★ リサイズハンドル判定
+    // リサイズハンドル判定
     if (this.selectedItems.length === 1) {
       for (const h of this.resizeHandles) {
         if (Math.abs(x - h.x) < 6 && Math.abs(y - h.y) < 6) {
@@ -260,7 +266,7 @@ export class DesignerCanvas {
       }
     }
 
-    // ★ 再帰ヒットテスト（ラムダ関数）
+    // 再帰ヒットテスト
     const hitTest = (widgets: Widget[]): Widget | null => {
       for (let i = widgets.length - 1; i >= 0; i--) {
         const w = widgets[i];
@@ -279,22 +285,18 @@ export class DesignerCanvas {
       return null;
     };
 
-    // ★ 通常の選択処理（トップレベルから再帰的に検索）
+    // 通常の選択処理（トップレベルから再帰的に検索）
     const hit = hitTest(this.widgets);
 
     if (hit) {
       this.isDragging = true;
       this.selectedItems = [hit];
-      hit.setSelected(true);
 
       if (this.propertyPanel) {
         this.propertyPanel.setWidget(hit);
       }
     } else {
       this.isDragging = false;
-      for (const w of this.widgets) {
-        w.setSelected(false);
-      }
       this.selectedItems = [];
 
       if (this.propertyPanel) {
@@ -345,7 +347,6 @@ export class DesignerCanvas {
     // ★ 通常のドラッグ
     if (!this.isDragging || this.selectedItems.length === 0) {
       return;
-
     }
 
     const dx = x - this.prevX;
@@ -374,10 +375,8 @@ export class DesignerCanvas {
       const parent = this.findParentAt(x, y, child);
 
       if (parent) {
-        // ★ 親の中に入れる（既存）
         this.attachToParent(child, parent);
       } else {
-        // ★ 親候補がない → トップレベルに戻す
         this.detachFromParent(child);
       }
       
@@ -387,10 +386,7 @@ export class DesignerCanvas {
     }
 
     // 選択解除
-    for (const widget of this.widgets) {
-      widget.setSelected(false);
-    }
-
+    // this.selectedItems = [];
     this.isDragging = false;
     this.resizing = false;
     this.resizeDir = "";
@@ -467,23 +463,10 @@ export class DesignerCanvas {
   }
 
   public selectWidgetFromTree(widget: Widget) {
-    // すべての選択解除
-    const clearSelection = (widgets: Widget[]) => {
-      for (const w of widgets) {
-        w.setSelected(false);
-        clearSelection(w.children);
-      }
-    };
-    clearSelection(this.widgets);
-
-    // 選択
-    widget.setSelected(true);
     this.selectedItems = [widget];
-
     if (this.propertyPanel) {
       this.propertyPanel.setWidget(widget);
     }
-
     this.render();
   }
 

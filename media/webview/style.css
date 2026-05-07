@@ -36,12 +36,11 @@ body {
     border-left: 1px solid #ccc;
     background: #f7f7f7;
     box-sizing: border-box;
-      color: #222;
-
+    color: #222;
 }
 
 .widget-tree li span {
-  color: #0078d4; /* ノード名だけ色変更 */
+  color: #0078d4; 
 }
 
 .row {

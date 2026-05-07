@@ -42,7 +42,7 @@ export class WidgetTree {
     label.style.borderRadius = "4px";
 
     // 選択中ならハイライト
-    if (widget.isSelected()) {
+    if (this.canvas.selectedItems.includes(widget)) {
       label.style.background = "#0078d4";
       label.style.color = "white";
     }

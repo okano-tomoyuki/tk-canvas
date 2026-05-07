@@ -1,7 +1,7 @@
 import { Property } from "./property";
 import { Widget } from "./widget";
 
-export class Textfield extends Widget {
+export class Entry extends Widget {
   text: string = "Text";
 
   constructor(props?: Record<string, any>) {

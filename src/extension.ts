@@ -100,10 +100,14 @@ async function getWebviewContent(context: vscode.ExtensionContext, panel: vscode
   const iconBase = vscode.Uri.joinPath(context.extensionUri, 'media', 'webview', 'icons');
 
   const iconButton = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'button.svg'));
-  const iconCheckbox = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'checkbox.svg'));
+  const iconCheckbutton = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'checkbutton.svg'));
   const iconLabel = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'label.svg'));
-  const iconPanel = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'panel.svg'));
-  const iconTextfield = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'textfield.svg'));
+  const iconFrame = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'frame.svg'));
+  const iconEntry = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'entry.svg'));
+  const iconText = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'text.svg'));
+  const iconRadiobutton = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'radiobutton.svg'));
+  const iconScale = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'scale.svg'));
+  const iconNotebook = panel.webview.asWebviewUri(vscode.Uri.joinPath(iconBase, 'notebook.svg'));
 
   // プレースホルダ置換（正攻法）
   html = html
@@ -111,10 +115,14 @@ async function getWebviewContent(context: vscode.ExtensionContext, panel: vscode
     .replace(/\$\{scriptUri\}/g, scriptUri.toString())
     .replace(/\$\{styleUri\}/g, styleUri.toString())
     .replace(/\$\{iconButton\}/g, iconButton.toString())
-    .replace(/\$\{iconCheckbox\}/g, iconCheckbox.toString())
+    .replace(/\$\{iconCheckbutton\}/g, iconCheckbutton.toString())
     .replace(/\$\{iconLabel\}/g, iconLabel.toString())
-    .replace(/\$\{iconPanel\}/g, iconPanel.toString())
-    .replace(/\$\{iconTextfield\}/g, iconTextfield.toString());
+    .replace(/\$\{iconFrame\}/g, iconFrame.toString())
+    .replace(/\$\{iconRadiobutton\}/g, iconRadiobutton.toString())
+    .replace(/\$\{iconText\}/g, iconText.toString())
+    .replace(/\$\{iconScale\}/g, iconScale.toString())
+    .replace(/\$\{iconNotebook\}/g, iconNotebook.toString())
+    .replace(/\$\{iconEntry\}/g, iconEntry.toString());
 
   return html;
 }

@@ -1,11 +1,13 @@
 import { Property } from "./property";
 import { Widget } from "./widget";
 
-export class Panel extends Widget {
+export class Frame extends Widget {
   fill: string = "#D3D3D3";
 
   constructor(props?: Record<string, any>) {
     super();
+    this.width = 100;
+    this.height = 100;
     if (props) {
       this.assign(props);
     }

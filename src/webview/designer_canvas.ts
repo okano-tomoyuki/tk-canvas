@@ -1,11 +1,15 @@
 import { Widget } from "./widget/widget";
-import { Panel } from "./widget/panel";
+import { Frame } from "./widget/frame";
 import { Label } from "./widget/label";
 import { Button } from "./widget/button";
-import { Checkbox } from "./widget/checkbox";
-import { Textfield } from "./widget/textfield";
+import { Checkbutton } from "./widget/checkbutton";
+import { Entry } from "./widget/entry";
+import { Text } from "./widget/text";
+import { Radiobutton } from "./widget/radiobutton";
+import { Notebook } from "./widget/notebook";
 import { PropertyPanel } from "./property_panel";
 import { WidgetTree } from "./widget_tree";
+import { WidgetRegistry } from "./widget_registory";
 
 export class DesignerCanvas {
   private canvas: HTMLCanvasElement;
@@ -47,25 +51,7 @@ export class DesignerCanvas {
   // Widget 追加
   // -----------------------------
   public addWidget(type: string) {
-    let w: Widget | null = null;
-
-    switch (type) {
-      case "panel":
-        w = new Panel({ x: 50, y: 50, width: 100, height: 80 });
-        break;
-      case "label":
-        w = new Label({ x: 50, y: 50 });
-        break;
-      case "button":
-        w = new Button({ x: 50, y: 50, width: 120, height: 40 });
-        break;
-      case "checkbox":
-        w = new Checkbox({ x: 50, y: 50 });
-        break;
-      case "textfield":
-        w = new Textfield({ x: 50, y: 50 });
-        break;
-    }
+    const w = WidgetRegistry.create(type, { x: 50, y: 50 });
 
     if (w) {
       this.widgets.push(w);
@@ -73,7 +59,7 @@ export class DesignerCanvas {
     }
 
     if (this.tree) {
-        this.tree.refresh();
+      this.tree.refresh();
     }
   }
 
@@ -99,27 +85,19 @@ export class DesignerCanvas {
       };
     };
 
-    // ★ トップレベル widgets を保存
+    // トップレベル widgets を保存
     return this.widgets.map(w => serialize(w));
   }
 
   public load(json: string) {
     const list: any[] = JSON.parse(json);
 
-    // ★ Widget の生成（ラムダ）
+    // Widget の生成（ラムダ）
     const create = (type: string, props: Record<string, any>): Widget => {
-      switch (type) {
-        case "Panel": return new Panel(props);
-        case "Label": return new Label(props);
-        case "Button": return new Button(props);
-        case "Checkbox": return new Checkbox(props);
-        case "Textfield": return new Textfield(props);
-        default:
-          throw new Error("Unknown widget type: " + type);
-      }
+      return WidgetRegistry.create(type, props);
     };
 
-    // ★ 再帰デシリアライズ（ラムダ）
+    // 再帰デシリアライズ（ラムダ）
     const deserialize = (data: any): Widget => {
       const widget = create(data.type, data.props);
 
@@ -132,13 +110,13 @@ export class DesignerCanvas {
       return widget;
     };
 
-    // ★ トップレベル widgets を再構築
+    // トップレベル widgets を再構築
     this.widgets = list.map(item => deserialize(item));
 
     this.render();
 
     if (this.tree) {
-        this.tree.refresh();
+      this.tree.refresh();
     }
   }
 
@@ -174,7 +152,7 @@ export class DesignerCanvas {
 
   private drawSelectionFrame(ctx: CanvasRenderingContext2D, w: Widget) {
     const ax = w.getAbsoluteX();
-    const ay = w.getAbsoluteY();    
+    const ay = w.getAbsoluteY();
 
     ctx.strokeStyle = "rgb(0, 120, 215)";
     ctx.lineWidth = 2;
@@ -183,7 +161,7 @@ export class DesignerCanvas {
       ay - 2,
       w.width + 4,
       w.height + 4
-    );    
+    );
   }
 
   private drawResizeHandles(ctx: CanvasRenderingContext2D, w: Widget) {
@@ -267,28 +245,13 @@ export class DesignerCanvas {
     }
 
     // 再帰ヒットテスト
-    const hitTest = (widgets: Widget[]): Widget | null => {
-      for (let i = widgets.length - 1; i >= 0; i--) {
-        const w = widgets[i];
-
-        // 子を先にチェック（深い方が優先）
-        const childHit = hitTest(w.children);
-        if (childHit) {
-          return childHit;
-        }
-
-        // 自分自身のヒット判定（絶対座標）
-        if (w.contains(x, y)) {
-          return w;
-        }
-      }
-      return null;
-    };
-
-    // 通常の選択処理（トップレベルから再帰的に検索）
-    const hit = hitTest(this.widgets);
+    const hit = this.hitTestRecursive(this.widgets, x, y);
 
     if (hit) {
+      // Widget ごとの特殊処理
+      this.handleWidgetClick(hit, x, y);
+
+      // 通常の選択処理
       this.isDragging = true;
       this.selectedItems = [hit];
 
@@ -307,12 +270,55 @@ export class DesignerCanvas {
     this.render();
   }
 
+  private hitTestRecursive(widgets: Widget[], x: number, y: number): Widget | null {
+    for (let i = widgets.length - 1; i >= 0; i--) {
+      const w = widgets[i];
+
+      // 子を先にチェック
+      const childHit = this.hitTestRecursive(w.children, x, y);
+      if (childHit) {
+        return childHit;
+      }
+
+      if (w.contains(x, y)) {
+        return w;
+      }
+    }
+    return null;
+  }
+
+  private handleWidgetClick(widget: Widget, x: number, y:number): void {
+    // Textfield のフォーカス（必要なら）
+    // if (widget instanceof Textfield) {
+    //   widget.focused = true;
+    //   return false; // ★ 選択は続行
+    // }
+    // Notebook のタブ切り替え（将来）
+    // Menu のクリック処理（将来）
+    if (widget instanceof Notebook) {
+      const ax = widget.getAbsoluteX();
+      const ay = widget.getAbsoluteY();
+      const tabWidth = 80;
+      const tabHeight = 28;
+
+      if (y >= ay && y <= ay + tabHeight) {
+        const index = Math.floor((x - ax) / tabWidth);
+        if (index >= 0 && index < widget.children.length) {
+          widget.activeTab = index;
+          this.propertyPanel?.setWidget(widget);
+          this.render();
+          return;
+        }
+      }
+    }
+  }
+
 
   private onMouseMove(e: MouseEvent) {
     const x = e.offsetX;
     const y = e.offsetY;
 
-    // ★ リサイズ中
+    // リサイズ中
     if (this.resizing && this.selectedItems.length === 1) {
       const w = this.selectedItems[0];
       const dx = x - this.startX;
@@ -344,7 +350,7 @@ export class DesignerCanvas {
       return;
     }
 
-    // ★ 通常のドラッグ
+    // 通常のドラッグ
     if (!this.isDragging || this.selectedItems.length === 0) {
       return;
     }
@@ -379,9 +385,9 @@ export class DesignerCanvas {
       } else {
         this.detachFromParent(child);
       }
-      
+
       if (this.tree) {
-         this.tree.refresh();
+        this.tree.refresh();
       }
     }
 
@@ -394,27 +400,38 @@ export class DesignerCanvas {
   }
 
   private findParentAt(x: number, y: number, child: Widget): Widget | null {
-    // 逆順で検索（上に描画されているものを優先）
-    for (let i = this.widgets.length - 1; i >= 0; i--) {
-      const w = this.widgets[i];
 
-      // 自分自身は親になれない
-      if (w === child) {
-        continue;
-      }
+    const search = (widgets: Widget[]): Widget | null => {
+      for (let i = widgets.length - 1; i >= 0; i--) {
+        const w = widgets[i];
 
-      // 子を持てない Widget はスキップ
-      if (!w.canHaveChildren()) {
-        continue;
-      }
+        // 自分自身は親になれない
+        if (w === child) {
+          continue;
+        }
 
-      // ヒットしていれば親候補
-      if (w.contains(x, y)) {
-        return w;
+        // 子を先に探索（深い階層を優先）
+        const deep = search(w.children);
+        if (deep) {
+          return deep;
+        }
+
+        // 子を持てない Widget はスキップ
+        if (!w.canHaveChildren()) {
+          continue;
+        }
+
+        // ヒットしていれば親候補
+        if (w.contains(x, y)) {
+          return w;
+        }
       }
-    }
-    return null;
+      return null;
+    };
+
+    return search(this.widgets);
   }
+
 
   private attachToParent(child: Widget, parent: Widget) {
     // ★ 先に絶対座標を退避しておく

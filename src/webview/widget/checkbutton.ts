@@ -1,9 +1,9 @@
 import { Property } from "./property";
 import { Widget } from "./widget";
 
-export class Checkbox extends Widget {
+export class Checkbutton extends Widget {
   checked: boolean = false;
-  caption: string = "CheckBox";
+  caption: string = "Checkbutton";
 
   constructor(props?: Record<string, any>) {
     super();

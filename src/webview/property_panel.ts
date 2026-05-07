@@ -1,4 +1,5 @@
 import { Widget } from "./widget/widget";
+import { Radiobutton } from "./widget/radiobutton";
 import { DesignerCanvas } from "./designer_canvas";
 
 export class PropertyPanel {
@@ -33,6 +34,7 @@ export class PropertyPanel {
       input.addEventListener("input", () => {
         const newValue = this.parseValue(input, prop);
         widget.setProperty(prop.key, newValue);
+        this.handlePropertyChanged(widget, prop.key, newValue);
         this.canvas?.render();
       });
 
@@ -42,7 +44,34 @@ export class PropertyPanel {
     }
   }
 
-  // ★ prop.type を見て input を生成する
+  private handlePropertyChanged(widget: Widget, key: string, value: any): void {
+
+    // Radiobutton の排他制御
+    if (widget instanceof Radiobutton) {
+      const group = widget.group;
+
+      const uncheckGroup = (widgets: Widget[]) => {
+        if (widget.checked === true) {
+          for (const w of widgets) {
+            if (w instanceof Radiobutton && w.group === group && w !== widget) {
+              w.checked = false;
+            }
+            uncheckGroup(w.children);
+          }
+        }
+      };
+
+      if (this.canvas) {
+        uncheckGroup(this.canvas.widgets);
+        this.canvas.render();
+      }
+    }
+
+    // Checkbox の ON/OFF は単純なので特に処理不要
+    // Notebook のタブ切り替えなどはここに追加予定
+  }
+
+  // prop.type を見て input を生成する
   private createInput(prop: any): HTMLElement {
     let input: HTMLElement;
 
@@ -57,6 +86,12 @@ export class PropertyPanel {
         input = document.createElement("input");
         (input as HTMLInputElement).type = "checkbox";
         (input as HTMLInputElement).checked = prop.value;
+        break;
+
+      case "list":
+        input = document.createElement("textarea");
+        (input as HTMLTextAreaElement).value = prop.value.join("\n");
+        (input as HTMLTextAreaElement).rows = 4;
         break;
 
       case "color":
@@ -97,6 +132,12 @@ export class PropertyPanel {
 
       case "boolean":
         return (input as HTMLInputElement).checked;
+
+      case "list":
+        return (input as HTMLTextAreaElement).value
+          .split("\n")
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
 
       case "color":
         return (input as HTMLInputElement).value;

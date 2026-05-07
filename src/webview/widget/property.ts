@@ -1,4 +1,4 @@
-export type PropertyType = "number" | "string" | "boolean" | "color" | "enum";
+export type PropertyType = "number" | "string" | "boolean" | "list" | "color" | "enum";
 
 export class Property<T> {
   constructor(

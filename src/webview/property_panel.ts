@@ -1,5 +1,6 @@
 import { Widget } from "./widget/widget";
 import { Radiobutton } from "./widget/radiobutton";
+import { Notebook } from "./widget/notebook";
 import { DesignerCanvas } from "./designer_canvas";
 
 export class PropertyPanel {
@@ -69,6 +70,29 @@ export class PropertyPanel {
 
     // Checkbox の ON/OFF は単純なので特に処理不要
     // Notebook のタブ切り替えなどはここに追加予定
+    if (widget instanceof Notebook && key === "tabNames") {
+      const newNames = value as string[];
+      const oldNames = widget.tabNames;
+
+      // --- ページ追加 ---
+      if (newNames.length > oldNames.length) {
+        for (let i = oldNames.length; i < newNames.length; i++) {
+          widget.addPage(newNames[i]);
+        }
+      }
+
+      // --- ページ削除 ---
+      if (newNames.length < oldNames.length) {
+        for (let i = newNames.length; i < oldNames.length; i++) {
+          widget.removePage(newNames.length); // 後ろから削除
+        }
+      }
+
+      // --- 名前更新 ---
+      widget.tabNames = newNames;
+
+      this.canvas?.render();
+    }
   }
 
   // prop.type を見て input を生成する

@@ -1,14 +1,29 @@
 import { Widget } from "./widget";
 import { Property } from "./property";
+import { Frame } from "./frame";
 
 export class Notebook extends Widget {
-  activeTab: number = -1;
-  tabNames: string[] = ["Tab1"];
+  tabNames: string[] = [];
+  activeTab: number = 0;
+  private readonly tabHeight : number = 28;
+  private readonly tabWidth : number = 80;
 
   constructor(props?: Record<string, any>) {
     super();
     this.width = 300;
     this.height = 200;
+
+    // --- デフォルトページ ---
+    const page = new Frame({
+      x: 0,
+      y: this.tabHeight,
+      width: this.width,
+      height: this.height - this.tabHeight,
+    });
+
+    page.parent = this;
+    this.children.push(page); // 描画・ヒットテスト用
+    this.tabNames.push("Tab1");
 
     if (props) {
       this.assign(props);
@@ -19,22 +34,19 @@ export class Notebook extends Widget {
     const ax = this.getAbsoluteX();
     const ay = this.getAbsoluteY();
 
-    const tabHeight = 28;
-
     // --- タブバー背景 ---
     ctx.fillStyle = "#ddd";
-    ctx.fillRect(ax, ay, this.width, tabHeight);
+    ctx.fillRect(ax, ay, this.width, this.tabHeight);
 
     // --- タブ描画 ---
-    const tabWidth = 80;
     for (let i = 0; i < this.tabNames.length; i++) {
-      const tx = ax + i * tabWidth;
+      const tx = ax + i * this.tabWidth;
 
       ctx.fillStyle = (i === this.activeTab) ? "#fff" : "#ccc";
-      ctx.fillRect(tx, ay, tabWidth, tabHeight);
+      ctx.fillRect(tx, ay, this.tabWidth, this.tabHeight);
 
       ctx.strokeStyle = "#000";
-      ctx.strokeRect(tx, ay, tabWidth, tabHeight);
+      ctx.strokeRect(tx, ay, this.tabWidth, this.tabHeight);
 
       ctx.fillStyle = "#000";
       ctx.font = "14px sans-serif";
@@ -42,9 +54,41 @@ export class Notebook extends Widget {
     }
 
     // --- 選択中ページの描画 ---
-    const page = this.children[this.activeTab];
+    const page = this.children[this.activeTab] as Frame;
     if (page) {
+      // Notebook のサイズに追従
+      page.x = 0;
+      page.y = this.tabHeight;
+      page.width = this.width;
+      page.height = this.height - this.tabHeight;
+
       page.paint(ctx);
+    }
+  }
+
+  addPage(name: string) {
+    const page = new Frame({
+      x: 0,
+      y: this.tabHeight,
+      width: this.width,
+      height: this.height - this.tabHeight,
+    });
+    page.parent = this;
+    this.children.push(page);
+    this.tabNames.push(name);
+    this.activeTab = this.children.length - 1;
+  }
+
+  removePage(index: number) {
+    if (this.children.length <= 1) {
+      return;
+    }
+
+    this.children.splice(index, 1);
+    this.tabNames.splice(index, 1);
+
+    if (this.activeTab >= this.children.length) {
+      this.activeTab = this.children.length - 1;
     }
   }
 
@@ -62,4 +106,5 @@ export class Notebook extends Widget {
   override canHaveChildren(): boolean {
     return true;
   }
+
 }

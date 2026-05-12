@@ -15,7 +15,7 @@
     "commands": [
       {
         "command": "tk-designer.openDesigner",
-        "title": "Hello World"
+        "title": "Open Designer"
       }
     ]
   },

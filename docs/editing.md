@@ -25,6 +25,7 @@
 | `setOption` | オプションを設定・削除 | `value: undefined` で削除 |
 | `setPlacement` | placement を設定・削除 | |
 | `setLayout` | layout を設定・削除 | manager が変わると子の placement を初期値に置き換える（grid なら上から順に行を割り当てる） |
+| `setWindow` | ルートの window（wm 系の設定）を設定 | 値が undefined の項目は削除し、すべて空なら window ごと削除する |
 
 コマンドは失敗すると理由を返す（`{ ok: false, error }`）。適用結果は常に検証（dsl-spec.md §11）を通る状態を保つことを、テストで確認している。
 
@@ -39,8 +40,30 @@
 
 Undo/Redo は VS Code のテキスト Undo がそのまま使われ、結果は 3. の経路で Webview に届く。
 
-## 4. 今後の課題
+## 4. プロパティエディタ
+
+インスペクタ（[webview/src/components/inspector/](../packages/webview/src/components/inspector/)）で、選択中のウィジェットを編集する。
+
+| 欄 | 内容 |
+|---|---|
+| id / class | id の変更（`renameWidget`） |
+| ウィンドウ | ルートのみ。title、geometry、resizable、minsize / maxsize（`setWindow`） |
+| 配置 | 親の置き方（pack / grid / place / Notebook のタブ / PanedWindow のペイン）に応じた placement の項目（`setPlacement`） |
+| レイアウト | layout で子を並べるコンテナのみ。manager、propagate、grid の行・列ごとの weight / minsize / pad / uniform（`setLayout`） |
+| オプション | カタログの「よく使うオプション」と設定済みのオプション。「すべてのオプションを表示」で残りも表示する（`setOption`） |
+
+入力の決まり:
+
+- 文字入力は Enter またはフォーカスを外したときに確定する（1回の確定 = Undo 1回）。Esc で入力前に戻す。選択肢・チェックは変更した時点で確定する。
+- 空欄は「値を書かない（Tk の既定値）」を表す。欄には Tk の既定値を薄く表示する（オプションはカタログの既定値）。
+- 入力欄の型はカタログの型に従う（列挙値・真偽は選択肢、変数参照は型の合う変数の一覧、command はメソッド名、その他は文字入力）。
+  文字入力の変換規則は [core/src/edit/inputs.ts](../packages/core/src/edit/inputs.ts)。
+- 形式が不正な入力は確定せず、その欄にエラーを表示する。確定後の検証エラー（dsl-spec.md §11）も、下部の一覧に加えて該当する欄に表示する。
+- オプション名の後ろの `*` は、生成時にしか指定できないオプション。
+- 外部（Undo、テキストエディタでの編集）で値が変わると、入力中の内容を捨てて新しい値を表示する。
+
+## 5. 今後の課題
 
 - ドラッグなどの連続操作は、確定時に1コマンドだけ送る（途中経過は UI ストアで表示する）。
-- 変数・bindings・window 設定を編集するコマンドは、プロパティエディタの作成時に追加する。
+- 変数・bindings を編集するコマンドと UI（段階 B）。
 - 1回の操作で複数のコマンドが必要になる場合に備え、複数コマンドを1回の WorkspaceEdit にまとめる仕組みを検討する。

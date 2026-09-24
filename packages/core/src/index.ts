@@ -30,9 +30,19 @@ export { applyCommand, type CommandResult, type EditCommand } from './edit/comma
 export { defaultPlacement, nextWidgetId } from './edit/defaults.ts';
 export { minimalTextEdit, type TextEdit } from './edit/textEdit.ts';
 export {
+  formatValue,
+  parseInteger,
+  parseNumber,
+  parseNumberList,
+  parseOptionInput,
+  parsePad,
+  type InputResult,
+} from './edit/inputs.ts';
+export {
   collectMemberNames,
   findNode,
   isDescendantOrSelf,
+  jsonPathOf,
   pathTo,
   walkNodes,
   type AnyNode,

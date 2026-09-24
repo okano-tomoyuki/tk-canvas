@@ -196,3 +196,20 @@ describe('nextWidgetId', () => {
     );
   });
 });
+
+describe('setWindow', () => {
+  it('設定し、空の項目は取り除く', () => {
+    const result = applyCommand(BASE, {
+      type: 'setWindow',
+      window: { title: 'App', geometry: undefined },
+    });
+    expect(result.ok && result.document.root.window).toEqual({ title: 'App' });
+  });
+
+  it('すべて空なら window ごと取り除く', () => {
+    const withTitle = applyCommand(BASE, { type: 'setWindow', window: { title: 'App' } });
+    if (!withTitle.ok) throw new Error(withTitle.error);
+    const cleared = applyCommand(withTitle.document, { type: 'setWindow', window: {} });
+    expect(cleared.ok && cleared.document.root.window).toBeUndefined();
+  });
+});

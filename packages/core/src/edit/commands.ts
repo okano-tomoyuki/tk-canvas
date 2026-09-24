@@ -7,7 +7,14 @@ import { produce } from 'immer';
 import { getWidgetCatalog } from '../catalog/catalog.ts';
 import { isValidIdentifier } from '../identifier.ts';
 import { containerKindOf } from '../dsl/placement.ts';
-import type { Layout, OptionValue, Placement, TkuiDocument, WidgetNode } from '../dsl/schema.ts';
+import type {
+  Layout,
+  OptionValue,
+  Placement,
+  TkuiDocument,
+  WidgetNode,
+  WindowSettings,
+} from '../dsl/schema.ts';
 import { defaultLayout, defaultOptions, defaultPlacement } from './defaults.ts';
 import { collectMemberNames, findNode, isDescendantOrSelf, type AnyNode } from './tree.ts';
 
@@ -43,7 +50,9 @@ export type EditCommand =
       readonly placement: Placement | undefined;
     }
   /** manager が変わると、子の placement は新しい manager の初期値に置き換える */
-  | { readonly type: 'setLayout'; readonly id: string; readonly layout: Layout | undefined };
+  | { readonly type: 'setLayout'; readonly id: string; readonly layout: Layout | undefined }
+  /** ルートウィンドウの wm 系の設定。undefined の項目は削除する（すべて空なら window ごと削除） */
+  | { readonly type: 'setWindow'; readonly window: WindowSettings };
 
 export type CommandResult =
   | { readonly ok: true; readonly document: TkuiDocument }
@@ -156,6 +165,12 @@ function apply(doc: TkuiDocument, command: EditCommand): void {
       const { node, parent } = requireNodeLocation(doc, command.id);
       if (!parent) throw new CommandError('ルートには placement を設定できません');
       setOrDelete(node as WidgetNode, 'placement', command.placement);
+      return;
+    }
+
+    case 'setWindow': {
+      const window = removeUndefined({ ...command.window });
+      setOrDelete(doc.root, 'window', Object.keys(window).length > 0 ? window : undefined);
       return;
     }
 

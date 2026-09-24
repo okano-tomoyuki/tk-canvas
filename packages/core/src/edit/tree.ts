@@ -40,6 +40,20 @@ export function pathTo(doc: TkuiDocument, id: string): AnyNode[] | undefined {
   return walk(doc.root, []);
 }
 
+/** id のノードの JSON 上の位置（例: ["root", "children", 2]）。診断の path と照合するのに使う */
+export function jsonPathOf(doc: TkuiDocument, id: string): (string | number)[] | undefined {
+  const path = pathTo(doc, id);
+  if (!path) return undefined;
+  const result: (string | number)[] = ['root'];
+  for (let i = 1; i < path.length; i++) {
+    const parent = path[i - 1];
+    const node = path[i];
+    if (!parent || !node) return undefined;
+    result.push('children', (parent.children ?? []).indexOf(node));
+  }
+  return result;
+}
+
 /** node が ancestor 自身またはその子孫か */
 export function isDescendantOrSelf(ancestor: AnyNode, node: AnyNode): boolean {
   if (ancestor === node) return true;

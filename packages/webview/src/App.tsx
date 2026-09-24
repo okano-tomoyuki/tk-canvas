@@ -1,5 +1,5 @@
 import { DesignCanvas } from './canvas/DesignCanvas.tsx';
-import { Inspector } from './components/Inspector.tsx';
+import { Inspector } from './components/inspector/Inspector.tsx';
 import { Palette } from './components/Palette.tsx';
 import { StatusPanel } from './components/StatusPanel.tsx';
 import { WidgetTree } from './components/WidgetTree.tsx';

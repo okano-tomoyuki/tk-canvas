@@ -334,3 +334,109 @@ input {
   justify-content: center;
   border: 1px dashed #999;
 }
+
+/* ---- インスペクタ（プロパティエディタ） ---- */
+
+.inspector-section {
+  margin-bottom: 12px;
+}
+
+.inspector-section h3 {
+  margin: 8px 0 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+}
+
+.inspector-section h4 {
+  margin: 8px 0 4px;
+  font-size: 0.9em;
+  font-weight: normal;
+  color: var(--vscode-descriptionForeground);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 38%) 1fr;
+  gap: 6px;
+  align-items: start;
+  margin: 2px 0;
+}
+
+.field-row > label {
+  padding-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--vscode-descriptionForeground);
+}
+
+.field-control {
+  min-width: 0;
+}
+
+.field-control > input,
+.field-control > select {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+select {
+  color: var(--vscode-dropdown-foreground);
+  background: var(--vscode-dropdown-background);
+  border: 1px solid var(--vscode-dropdown-border, transparent);
+  padding: 1px 2px;
+}
+
+.field-row.has-error input,
+.compact-input.has-error {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground));
+}
+
+.field-error {
+  margin-top: 2px;
+  font-size: 0.9em;
+  color: var(--vscode-errorForeground);
+}
+
+.inspector-note {
+  margin: 2px 0 6px;
+  font-size: 0.9em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.inspector-toggle {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 6px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.sticky-options {
+  display: flex;
+  gap: 10px;
+}
+
+.sticky-options label {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.grid-lines table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grid-lines th {
+  font-weight: normal;
+  color: var(--vscode-descriptionForeground);
+  text-align: left;
+}
+
+.compact-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 2.5em;
+}

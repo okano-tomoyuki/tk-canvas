@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TkuiDocument } from '../dsl/schema.ts';
-import { pathTo } from './tree.ts';
+import { jsonPathOf, pathTo } from './tree.ts';
 
 const DOC: TkuiDocument = {
   formatVersion: 1,
@@ -34,5 +34,13 @@ describe('pathTo', () => {
 
   it('見つからなければ undefined', () => {
     expect(pathTo(DOC, 'missing')).toBeUndefined();
+  });
+});
+
+describe('jsonPathOf', () => {
+  it('JSON 上の位置を返す', () => {
+    expect(jsonPathOf(DOC, 'ok')).toEqual(['root', 'children', 0, 'children', 1, 'children', 0]);
+    expect(jsonPathOf(DOC, 'root')).toEqual(['root']);
+    expect(jsonPathOf(DOC, 'missing')).toBeUndefined();
   });
 });

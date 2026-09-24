@@ -1,6 +1,4 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "search.exclude": {
     "**/dist": true,
     "pnpm-lock.yaml": true

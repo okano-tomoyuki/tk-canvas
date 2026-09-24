@@ -7,7 +7,8 @@
 | Node.js 24 以上 | ビルド・テスト |
 | pnpm（`corepack enable pnpm`。バージョンは `package.json` の `packageManager` で固定） | パッケージ管理 |
 | Tk 入りの tclsh（Windows では MSYS2 の `mingw-w64-x86_64-tk` など） | ウィジェットカタログの抽出、レイアウトの検証データの記録のみ |
-| tkinter の使える Python | 生成したコードの検証のみ |
+| tkinter の使える Python | 生成したコード（Python）の検証のみ |
+| C++ コンパイラ・CMake・Ninja と cpp_tk のソース（Windows では MSYS2 の mingw64） | 生成したコード（C++）の検証のみ |
 
 ## 2. よく使うコマンド
 
@@ -21,6 +22,7 @@
 | `pnpm catalog:extract` | Tk からウィジェットカタログを抽出（[catalog.md](catalog.md)） |
 | `pnpm layout:record` | レイアウトの検証データを Tk で記録（[layout.md](layout.md)） |
 | `pnpm codegen:verify-python` | 生成した Python のコードを実行して検証（tkinter の使える Python が必要。[codegen-design.md](codegen-design.md) §6） |
+| `pnpm codegen:verify-cpp` | 生成した C++ のコードをビルド・実行して検証（C++ コンパイラ・CMake・Ninja・Tcl/Tk と cpp_tk のソースが必要。cpp_tk の場所は環境変数 `CPP_TK_DIR`、既定は隣の `../cpp_tk`） |
 | `node packages/cli/dist/cli.js generate <file.tkui.json>` | CLI でコードを生成（`--force` で手編集された区間も上書き、`--check` で最新かだけを調べる） |
 
 ## 3. 拡張のデバッグ実行

@@ -55,7 +55,7 @@ export const SAMPLE: TkuiDocument = {
             id: 'general_page',
             class: 'ttk.Frame',
             options: { padding: 8 },
-            placement: { text: 'General' },
+            placement: { text: 'General', padding: 4 },
             layout: { manager: 'pack', propagate: false },
             children: [
               {

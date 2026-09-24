@@ -56,11 +56,11 @@ class Dialog:
         self.level_scale.grid(row=2, column=0, columnspan=2, sticky="ew")
         self.tabs.grid(row=3, column=0, columnspan=2, sticky="nsew")
 
-        self.tabs.add(self.general_page, text="General")
+        self.tabs.add(self.general_page, text="General", padding=4)
 
         self.general_page.pack_propagate(False)
         self.submit_button.pack(side="right")
-    # <tk-designer:end id="tkd_apply_layout" hash="062786df">
+    # <tk-designer:end id="tkd_apply_layout" hash="dd3fd6cf">
 
     # <tk-designer:begin id="tkd_bind_events">
     def tkd_bind_events(self):

@@ -36,5 +36,7 @@
 ## 影響
 
 - DSL に `codegen` 項目が加わる（formatVersion は 1 のまま。省略可能な項目の追加のため）。
-- cpp_tk の `ttk::Notebook` はタブのラベル以外のオプション（sticky / padding / state / underline）を指定する API がない。
-  cpp_tk に `Notebook::add(const Widget&, const std::map<std::string, ArgValue>&)` を追加するまでは、生成時に警告として知らせる。
+- cpp_tk の `ttk::Notebook` はタブの追加に `add_tab(child, label)` しかないため、ラベル以外のオプション（sticky / padding / state / underline）を
+  指定する方法が課題だった。
+  （2026-09-25 追記: 既存の `Notebook::tab(tab_id, options)` がウィジェットのフルネームを tab_id として受け付けるため、
+  `add_tab` の後に `tab(child.full_name(), {...})` で設定できる。cpp_tk の変更は不要になった。）

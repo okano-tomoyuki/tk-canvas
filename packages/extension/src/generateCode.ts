@@ -1,8 +1,8 @@
 /**
  * コード生成（docs/adr/0010、docs/codegen-design.md）。デザイナーの「コード生成」ボタンから呼ばれる。
  */
-import { generatePython, resolveTargets } from '@tk-designer/codegen';
-import { hasErrors, parseDocument } from '@tk-designer/core';
+import { generateAll, resolveTargets, type OutputFile } from '@tk-designer/codegen';
+import { hasErrors, parseDocument, type CodegenSettings } from '@tk-designer/core';
 import * as vscode from 'vscode';
 import { applyEditCommand } from './applyEditCommand.ts';
 
@@ -19,18 +19,11 @@ export async function generateCode(document: vscode.TextDocument): Promise<void>
   let doc = parsed.document;
   let targets = resolveTargets(doc, fileName);
 
-  // 生成先が未設定なら、Python（tkinter）の生成を有効にするか尋ねる
+  // 生成先が未設定なら、どの言語で生成するかを選んでもらい、DSL の codegen に追加する
   if (!targets.python && !targets.cpp) {
-    const enable = '有効にする';
-    const answer = await vscode.window.showInformationMessage(
-      `生成先が設定されていません。Python（tkinter）のコード生成を有効にしますか？（DSL に "codegen": { "python": {} } を追加します）`,
-      enable,
-    );
-    if (answer !== enable) return;
-    const result = await applyEditCommand(document, {
-      type: 'setCodegen',
-      codegen: { python: {} },
-    });
+    const codegen = await pickTargets();
+    if (!codegen) return;
+    const result = await applyEditCommand(document, { type: 'setCodegen', codegen });
     if (!result.ok) {
       void vscode.window.showErrorMessage(result.error);
       return;
@@ -39,44 +32,90 @@ export async function generateCode(document: vscode.TextDocument): Promise<void>
     targets = resolveTargets(doc, fileName);
   }
 
-  if (targets.cpp) {
-    void vscode.window.showWarningMessage('C++（cpp_tk）のコード生成はまだ実装されていません。');
-  }
-  if (!targets.python) return;
-
+  // 出力先の既存の内容を先に読んでおく（生成は同期的に行う）
   const directory = vscode.Uri.joinPath(document.uri, '..');
-  const target = vscode.Uri.joinPath(directory, targets.python.file);
-  const existing = await readText(target);
-  const result = generatePython(doc, fileName, existing);
-  if (!result.ok) {
-    void vscode.window.showErrorMessage(`${targets.python.file}: ${result.error}`);
+  const paths = [targets.python?.file, targets.cpp?.header, targets.cpp?.source].filter(
+    (p): p is string => p !== undefined,
+  );
+  const existing = new Map<string, string | undefined>();
+  for (const path of paths)
+    existing.set(path, await readText(vscode.Uri.joinPath(directory, path)));
+
+  const generated = generateAll(doc, fileName, (path) => existing.get(path));
+  if ('error' in generated) {
+    void vscode.window.showErrorMessage(generated.error);
     return;
   }
+  const failed = generated.files.find((f) => !f.result.ok);
+  if (failed && !failed.result.ok) {
+    void vscode.window.showErrorMessage(`${failed.path}: ${failed.result.error}`);
+    return;
+  }
+  for (const warning of generated.warnings) void vscode.window.showWarningMessage(warning);
 
-  if (result.modifiedRegions.length > 0) {
+  const files = generated.files.filter(
+    (f): f is OutputFile & { result: { ok: true } } => f.result.ok,
+  );
+  const modified = files.filter((f) => f.result.modifiedRegions.length > 0);
+  if (modified.length > 0) {
     const overwrite = '上書きする';
+    const list = modified
+      .map((f) => `${f.path}（${f.result.modifiedRegions.join(', ')}）`)
+      .join('、');
     const answer = await vscode.window.showWarningMessage(
-      `${targets.python.file} の自動生成区間（${result.modifiedRegions.join(', ')}）が手で編集されています。上書きしますか？`,
+      `自動生成区間が手で編集されています: ${list}。上書きしますか？`,
       { modal: true },
       overwrite,
     );
     if (answer !== overwrite) return;
   }
 
-  if (existing === result.text) {
-    void vscode.window.showInformationMessage(`${targets.python.file} は最新です。`);
+  const changed = files.filter((f) => existing.get(f.path) !== f.result.text);
+  if (changed.length === 0) {
+    void vscode.window.showInformationMessage(
+      `${files.map((f) => f.path).join('、')} は最新です。`,
+    );
     return;
   }
-  await writeText(target, existing, result.text);
+  for (const file of changed) {
+    await writeText(
+      vscode.Uri.joinPath(directory, file.path),
+      existing.get(file.path),
+      file.result.text,
+    );
+  }
 
-  const details =
-    result.addedStubs.length > 0 ? `（ハンドラの雛形を追加: ${result.addedStubs.join(', ')}）` : '';
+  const stubs = [...new Set(changed.flatMap((f) => f.result.addedStubs))];
+  const details = stubs.length > 0 ? `（ハンドラの雛形を追加: ${stubs.join(', ')}）` : '';
+  const summary = changed
+    .map((f) => `${f.path}（${existing.get(f.path) === undefined ? '作成' : '更新'}）`)
+    .join('、');
   const open = '開く';
   const answer = await vscode.window.showInformationMessage(
-    `${existing === undefined ? '作成' : '更新'}しました: ${targets.python.file}${details}`,
+    `生成しました: ${summary}${details}`,
     open,
   );
-  if (answer === open) await vscode.window.showTextDocument(target, { preview: false });
+  if (answer === open) {
+    for (const file of changed) {
+      await vscode.window.showTextDocument(vscode.Uri.joinPath(directory, file.path), {
+        preview: false,
+      });
+    }
+  }
+}
+
+/** 生成する言語を選んでもらう。取り消されたら undefined */
+async function pickTargets(): Promise<CodegenSettings | undefined> {
+  const items: (vscode.QuickPickItem & { codegen: CodegenSettings })[] = [
+    { label: 'Python（tkinter）', description: '<名前>.py', codegen: { python: {} } },
+    { label: 'C++（cpp_tk）', description: '<名前>.hpp / <名前>.cpp', codegen: { cpp: {} } },
+    { label: 'Python と C++ の両方', codegen: { python: {}, cpp: {} } },
+  ];
+  const picked = await vscode.window.showQuickPick(items, {
+    title:
+      '生成先が設定されていません。生成する言語を選んでください（DSL の codegen に追加します）',
+  });
+  return picked?.codegen;
 }
 
 /** 開いている（未保存の変更を含む）内容、なければファイルの内容。ファイルがなければ undefined */

@@ -18,7 +18,8 @@
     "generate:schema": "pnpm --filter tk-designer generate:schema",
     "catalog:extract": "tclsh tools/catalog/extract.tcl packages/core/src/catalog/tk-raw.json",
     "layout:record": "node tools/layout/record.mts",
-    "codegen:verify-python": "node tools/codegen/verify-python.mts"
+    "codegen:verify-python": "node tools/codegen/verify-python.mts",
+    "codegen:verify-cpp": "node tools/codegen/verify-cpp.mts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

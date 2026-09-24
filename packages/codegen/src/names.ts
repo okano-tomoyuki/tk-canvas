@@ -1,10 +1,20 @@
 import type { CodegenSettings, TkuiDocument } from '@tk-designer/core';
 
+/** パスを区切りで分割する（Windows と POSIX の両方の区切りに対応する） */
+function pathSegments(path: string): string[] {
+  return path.split(/[\\/]/).filter((s) => s !== '');
+}
+
+/** パスの最後の要素（ファイル名） */
+export function fileNameOf(path: string): string {
+  return pathSegments(path).pop() ?? path;
+}
+
 /** DSL のファイル名（例: "main_window.tkui.json"）から拡張子を除いた名前（"main_window"） */
 export function baseName(dslFileName: string): string {
-  // Windows と POSIX の両方の区切りに対応する
-  const name = dslFileName.split(/[\\/]/).pop() ?? dslFileName;
-  return name.replace(/\.tkui\.json$/, '').replace(/\.json$/, '');
+  return fileNameOf(dslFileName)
+    .replace(/\.tkui\.json$/, '')
+    .replace(/\.json$/, '');
 }
 
 /** "main_window" → "MainWindow"。識別子に使えない文字は区切りとして扱う */
@@ -55,4 +65,22 @@ export function resolveTargets(doc: TkuiDocument, dslFileName: string): Resolved
       },
     }),
   };
+}
+
+/**
+ * from のファイルから見た to のファイルの相対パス（どちらも同じフォルダからの相対パス。区切りは "/"）。
+ * C++ のソースからヘッダを include するパスに使う。
+ */
+export function relativePath(from: string, to: string): string {
+  const split = (p: string) => pathSegments(p).filter((s) => s !== '.');
+  const fromDir = split(from).slice(0, -1);
+  const target = split(to);
+  let common = 0;
+  while (
+    common < fromDir.length &&
+    common < target.length - 1 &&
+    fromDir[common] === target[common]
+  )
+    common++;
+  return [...fromDir.slice(common).map(() => '..'), ...target.slice(common)].join('/');
 }

@@ -11,7 +11,7 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 | [development.md](development.md) | 開発手順（環境・コマンド・デバッグ実行とトラブル対処） | 初版 |
 | [adr/](adr/) | 設計判断の記録（1判断1ファイル） | 随時追加 |
 | [dsl-design-notes.md](dsl-design-notes.md) | DSL 設計の検討メモ（ドラフトのレビュー・論点） | 完了（dsl-spec.md に反映済み） |
-| [codegen-design.md](codegen-design.md) | コード生成（マーカー区間更新）の設計・生成例・実装 | Python 実装済み（C++ は未実装） |
+| [codegen-design.md](codegen-design.md) | コード生成（マーカー区間更新）の設計・生成例・実装 | Python・C++ 実装済み |
 | [dsl-spec.md](dsl-spec.md) | DSL 正式仕様（formatVersion 1） | 初版 |
 | [catalog.md](catalog.md) | ウィジェットカタログ（抽出・型推定・補足情報・更新手順） | 初版（補足は 23 クラス） |
 | [editing.md](editing.md) | 編集基盤（編集コマンド・拡張と Webview の同期） | 初版 |

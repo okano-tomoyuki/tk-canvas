@@ -83,7 +83,7 @@
 |---|---|---|
 | `python.className` | 生成するクラスの名前 | `MainWindow`（ファイル名から） |
 | `python.file` | 出力先 | `main_window.py` |
-| `cpp.className` / `cpp.header` / `cpp.source` | 同上（C++ の生成は未実装） | `MainWindow` / `main_window.hpp` / `main_window.cpp` |
+| `cpp.className` / `cpp.header` / `cpp.source` | C++ のクラス名・ヘッダ・ソースの出力先 | `MainWindow` / `main_window.hpp` / `main_window.cpp` |
 
 ## 4. ノード
 

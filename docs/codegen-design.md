@@ -233,29 +233,51 @@ class MainWindow:
 | M8 | VS Code 上での書き込み | **WorkspaceEdit** で書き込む。書き込み前に未保存の変更がなかったファイルは、書き込み後に保存する。 |
 | M10 | ハンドラ雛形の追記位置 | `<tk-designer:handler-stubs>` の直後に追記する。マーカーがなければ Python は `if __name__ == "__main__":` の手前（なければ末尾）。定義済みかは `def 名前(` の有無で判定する。 |
 
-## 6. 実装（Python / tkinter）
+## 6. 実装
 
 生成の設定と生成のきっかけは [ADR 0010](adr/0010-codegen-config-and-trigger.md)。
 
 | ファイル | 内容 |
 |---|---|
 | [codegen/src/model.ts](../packages/codegen/src/model.ts) | 中間表現（ウィジェット・変数・イベント・ハンドラのシグネチャ） |
-| [codegen/src/python/emit.ts](../packages/codegen/src/python/emit.ts) | 区間の中身・新規ファイルの雛形・ハンドラの雛形 |
+| [codegen/src/python/emit.ts](../packages/codegen/src/python/emit.ts) | Python: 区間の中身・新規ファイルの雛形・ハンドラの雛形 |
+| [codegen/src/cpp/emit.ts](../packages/codegen/src/cpp/emit.ts) | C++: ヘッダ（宣言の区間）とソース（生成・配置・イベントの区間、ハンドラの雛形） |
 | [codegen/src/region.ts](../packages/codegen/src/region.ts) | マーカー区間の書き出しと、既存のファイルへのマージ（言語共通） |
+| [codegen/src/index.ts](../packages/codegen/src/index.ts) | `generateAll`: codegen に書かれたすべてのターゲットを生成する（拡張機能・CLI の共通の入口） |
 | [codegen/src/__golden__/](../packages/codegen/src/__golden__/) | 生成結果のゴールデンファイル（テストで比較） |
+
+生成の入口は、デザイナーの「コード生成」ボタン（拡張）と `tkd generate`（CLI）。codegen が未設定なら、ボタンでは生成する言語（Python / C++ / 両方）を選んで DSL に追加する。
+
+### Python（tkinter）
 
 - Python のキーワードと重なるオプション名は tkinter の慣習どおり末尾に `_` を付ける（`from` → `from_`、`class` → `class_`）。
 - ルートが Toplevel の場合は `__init__(self, master)` とし、`run` と `if __name__ == "__main__":` は作らない。
-- 生成の入口は、デザイナーの「コード生成」ボタン（拡張）と `tkd generate`（CLI）。
+
+### C++（cpp_tk）
+
+- ハンドラの宣言はヘッダの宣言の区間に入る（M1）。実装の雛形はソースの `<tk-designer:handler-stubs>` の後に追記する（定義済みかは `クラス名::ハンドラ名(` の有無で判定）。
+- 親は常に `as_parent()` で渡す。オプションは `std::map<std::string, ArgValue>` で渡し、変数は `ArgValue(Var&)` で名前として渡る。リストは `std::vector<tk::ArgValue>{...}`。
+- command は `[this]() { h(); }`、Scale は `[this](const double& value) { h(value); }`、bind は `[this](const tk::Event& event) { h(event); }`。
+- Notebook のタブは `add_tab(child, text)` の後、ラベル以外の指定を `tab(child.full_name(), {...})` で設定する。
+- cpp_tk の `Tk()` は `geometry("300x300")` を設定するため、geometry が未指定なら `geometry("")` で要求サイズに戻す（Tkinter と同じ動作にする）。
+- ルートが Toplevel の場合は、コンストラクタで親（`const cpp_tk::Widget&`）を受け取り、`run` は作らない。
+- tk.Tk の生成時にしか指定できないオプション（class 等）は反映できないため、警告として知らせる。
+- コールバックが this を捕捉するため、生成するクラスはコピーできない（コピーコンストラクタ・代入演算子を delete する）。
+- `main` 関数は生成しない。利用側で `MainWindow ui; ui.run();` のように使う。
 
 ### 検証
 
-`pnpm codegen:verify-python`（[tools/codegen/verify-python.mts](../tools/codegen/verify-python.mts)）で、生成したコードを実際の Python で実行して確かめる。
+生成したコードを実際に実行して確かめる（Python と C++ で同じ内容を検証する）。
 
-1. レイアウトの検証データ（docs/layout.md）から生成したコードを実行し、全ウィジェットの位置と大きさが Tk の記録と一致すること（現在 5 フィクスチャ・39 ウィジェットで一致）。
+| コマンド | 内容 |
+|---|---|
+| `pnpm codegen:verify-python` | 生成した Python を tkinter で実行（[verify-python.mts](../tools/codegen/verify-python.mts)） |
+| `pnpm codegen:verify-cpp` | 生成した C++ を cpp_tk と一緒に CMake + Ninja でビルドして実行（[verify-cpp.mts](../tools/codegen/verify-cpp.mts)）。作業フォルダは `.cache/verify-cpp` |
+
+1. レイアウトの検証データ（docs/layout.md）から生成したコードを実行し、全ウィジェットの位置と大きさが Tk の記録と一致すること（Python・C++ とも 5 フィクスチャ・39 ウィジェットで一致）。
 2. 変数・command・bind が結び付いていること（ボタンの invoke、Scale の値の変更、Return キーでハンドラが呼ばれ、Radiobutton が変数を更新する）。
+3. C++ のみ: ルートが Toplevel の場合に、親を受け取って表示され、ウィンドウの設定（title・geometry・resizable）が反映されること。
 
 ## 7. 未実装
 
-- C++（cpp_tk）の生成。生成したコードのビルドによる検証とあわせて整備する（ADR 0010）。
 - ウィジェット id の変更の警告（M7）、Python で使われなくなったハンドラの警告（M1）。

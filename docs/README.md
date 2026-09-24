@@ -15,7 +15,7 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 | [dsl-spec.md](dsl-spec.md) | DSL 正式仕様（formatVersion 1） | 初版 |
 | [catalog.md](catalog.md) | ウィジェットカタログ（抽出・型推定・補足情報・更新手順） | 初版（補足は 23 クラス） |
 | [editing.md](editing.md) | 編集基盤（編集コマンド・拡張と Webview の同期） | 初版 |
-| [layout.md](layout.md) | レイアウトエンジン（pack / grid / place の移植と Tk との比較検証） | 初版（要求サイズの推定は未実装） |
+| [layout.md](layout.md) | レイアウトエンジン（pack / grid / place の移植と Tk との比較検証）・キャンバス表示 | 初版（要求サイズの推定は暫定） |
 | [architecture.md](architecture.md) | パッケージ構成・データフロー・技術スタック | 初版（A3〜A5 は未決） |
 | [drafts/](drafts/) | DSL・コード生成の初期ドラフト（すり合わせ用の参考資料） | 参考 |
 | requirements.md | 機能要件・非機能要件 | 未着手 |

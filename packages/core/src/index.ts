@@ -33,6 +33,7 @@ export {
   collectMemberNames,
   findNode,
   isDescendantOrSelf,
+  pathTo,
   walkNodes,
   type AnyNode,
   type NodeLocation,

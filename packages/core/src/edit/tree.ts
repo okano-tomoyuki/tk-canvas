@@ -26,6 +26,20 @@ function findIn(parent: AnyNode, id: string): NodeLocation | undefined {
   return undefined;
 }
 
+/** ルートから id のノードまでの経路（両端を含む）。見つからなければ undefined */
+export function pathTo(doc: TkuiDocument, id: string): AnyNode[] | undefined {
+  const walk = (node: AnyNode, path: AnyNode[]): AnyNode[] | undefined => {
+    const here = [...path, node];
+    if (node.id === id) return here;
+    for (const child of node.children ?? []) {
+      const found = walk(child, here);
+      if (found) return found;
+    }
+    return undefined;
+  };
+  return walk(doc.root, []);
+}
+
 /** node が ancestor 自身またはその子孫か */
 export function isDescendantOrSelf(ancestor: AnyNode, node: AnyNode): boolean {
   if (ancestor === node) return true;

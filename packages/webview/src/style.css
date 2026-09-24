@@ -51,10 +51,22 @@ input {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(200px, 1.5fr) minmax(240px, 2fr);
-  grid-template-rows: 1fr auto;
+  grid-template-columns: minmax(200px, 1fr) minmax(300px, 3fr) minmax(240px, 1.2fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
   height: calc(100vh - 16px);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.sidebar > .panel {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .layout > .status {
@@ -140,4 +152,185 @@ input {
   display: flex;
   justify-content: space-between;
   margin-bottom: 4px;
+}
+
+/* ---- キャンバス ----------------------------------------------------------
+ * ウィンドウの中身は、Windows の Tk（vista テーマ）に近い固定の配色で描く。
+ * 周囲と選択枠は VS Code のテーマに合わせる。 */
+
+.canvas-panel {
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+}
+
+.design-window {
+  display: inline-block;
+  margin: 16px;
+  border: 1px solid var(--vscode-widget-border, #888);
+  box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.3));
+}
+
+.design-window-title {
+  height: 28px;
+  padding: 0 8px;
+  line-height: 28px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #000;
+  background: #fff;
+  font:
+    12px 'Segoe UI',
+    sans-serif;
+}
+
+.design-client {
+  position: relative;
+  overflow: hidden;
+  color: #000;
+  background: #f0f0f0;
+  font:
+    12px 'Segoe UI',
+    sans-serif;
+}
+
+.design-client.selected {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: -2px;
+}
+
+.widget {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.widget:hover {
+  outline: 1px dashed var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.selection-overlay {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--vscode-focusBorder);
+  pointer-events: none;
+}
+
+.widget-text {
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.widget-button {
+  justify-content: center;
+  background: #e1e1e1;
+  border: 1px solid #adadad;
+}
+
+.widget-check,
+.widget-radio {
+  gap: 4px;
+}
+
+.widget-indicator {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border: 1px solid #333;
+}
+
+.widget-indicator-radio {
+  border-radius: 50%;
+}
+
+.widget-entry {
+  padding: 0 3px;
+  background: #fff;
+  border: 1px solid #7a7a7a;
+}
+
+.widget-field {
+  align-items: flex-start;
+  padding: 2px 4px;
+  background: #fff;
+  border: 1px solid #828790;
+}
+
+.widget-class {
+  font-size: 11px;
+  color: #888;
+}
+
+/* 枠のないコンテナは、範囲が分かるように薄い破線を描く（デザイン時のみの表示） */
+.widget-frame {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.widget-labelframe {
+  align-items: flex-start;
+}
+
+.widget-labelframe::before {
+  content: '';
+  position: absolute;
+  inset: 8px 0 0 0;
+  border: 1px solid #d5dfe5;
+  border-radius: 2px;
+}
+
+.widget-caption {
+  position: relative;
+  margin-left: 6px;
+  padding: 0 2px;
+  line-height: 16px;
+  background: #f0f0f0;
+}
+
+.widget-notebook {
+  align-items: flex-start;
+}
+
+.widget-notebook::before {
+  content: '';
+  position: absolute;
+  inset: 22px 0 0 0;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+}
+
+.widget-tabs {
+  position: relative;
+  display: flex;
+  height: 22px;
+  margin-left: 2px;
+}
+
+.widget-tab {
+  padding: 2px 8px 0;
+  background: #f0f0f0;
+  border: 1px solid #d9d9d9;
+  border-bottom: none;
+}
+
+.widget-tab.active {
+  background: #fff;
+}
+
+.widget-bar {
+  background: #e6e6e6;
+  border: 1px solid #bcbcbc;
+}
+
+.widget-separator {
+  background: #a0a0a0;
+}
+
+.widget-generic {
+  justify-content: center;
+  border: 1px dashed #999;
 }

@@ -9,6 +9,13 @@
       "type": "number",
       "const": 1
     },
+    "codegen": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CodegenSettings"
+        }
+      ]
+    },
     "variables": {
       "type": "object",
       "propertyNames": {
@@ -97,6 +104,45 @@
   "additionalProperties": false,
   "title": "tk-designer UI definition (*.tkui.json)",
   "definitions": {
+    "CodegenSettings": {
+      "type": "object",
+      "properties": {
+        "cpp": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "header": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "python": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "コード生成の設定。書いたターゲットだけを生成する"
+    },
     "RootNode": {
       "type": "object",
       "properties": {

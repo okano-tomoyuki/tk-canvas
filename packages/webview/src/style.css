@@ -162,6 +162,21 @@ input {
   background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
 }
 
+.canvas-toolbar {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.canvas-toolbar button {
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+.canvas-toolbar button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
 .design-window {
   display: inline-block;
   margin: 16px;

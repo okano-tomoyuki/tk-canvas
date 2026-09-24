@@ -5,6 +5,7 @@ import type {
 } from '@tk-designer/core';
 import * as vscode from 'vscode';
 import { applyEditCommand } from './applyEditCommand.ts';
+import { generateCode } from './generateCode.ts';
 
 /**
  * *.tkui.json を開くデザイナー。TextDocument を唯一の正とする（docs/adr/0006）。
@@ -55,6 +56,9 @@ export class DesignerEditorProvider implements vscode.CustomTextEditorProvider {
             break;
           case 'edit':
             enqueueEdit(message.requestId, message.command);
+            break;
+          case 'generateCode':
+            void generateCode(document);
             break;
         }
       }),

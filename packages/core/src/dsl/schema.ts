@@ -223,10 +223,30 @@ export const RootNode = z
   })
   .meta({ id: 'RootNode', description: 'ウィンドウ（生成されるクラス1つに対応する）' });
 
+/** コード生成の設定（docs/adr/0010）。パスは DSL ファイルのあるフォルダからの相対パス */
+export const CodegenSettings = z
+  .strictObject({
+    cpp: z
+      .strictObject({
+        className: Identifier.optional(),
+        header: z.string().min(1).optional(),
+        source: z.string().min(1).optional(),
+      })
+      .optional(),
+    python: z
+      .strictObject({
+        className: Identifier.optional(),
+        file: z.string().min(1).optional(),
+      })
+      .optional(),
+  })
+  .meta({ id: 'CodegenSettings', description: 'コード生成の設定。書いたターゲットだけを生成する' });
+
 export const TkuiDocument = z
   .strictObject({
     $schema: z.string().optional(),
     formatVersion: z.literal(FORMAT_VERSION),
+    codegen: CodegenSettings.optional(),
     variables: z.record(Identifier, Variable).optional(),
     root: RootNode,
   })
@@ -247,6 +267,7 @@ export type OptionValue = z.infer<typeof OptionValue>;
 export type VariableRef = z.infer<typeof VariableRef>;
 export type HandlerRef = z.infer<typeof HandlerRef>;
 export type WindowSettings = z.infer<typeof WindowSettings>;
+export type CodegenSettings = z.infer<typeof CodegenSettings>;
 export type Anchor = z.infer<typeof Anchor>;
 export type PackPlacement = z.infer<typeof PackPlacement>;
 export type GridPlacement = z.infer<typeof GridPlacement>;

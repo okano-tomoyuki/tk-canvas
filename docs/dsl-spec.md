@@ -72,9 +72,18 @@
 | キー | 必須 | 型 | 説明 |
 |---|---|---|---|
 | `formatVersion` | ○ | `1` | フォーマットのバージョン。形式を変えたときに上げ、旧形式からの移行に使う |
+| `codegen` | | オブジェクト | コード生成の設定（下表）。書いたターゲットだけを生成する（ADR 0010） |
 | `variables` | | 名前 → 変数 | §5 |
 | `root` | ○ | ルートノード | §4 |
 | `$schema` | | 文字列 | エディタ向け。内容には影響しない |
+
+`codegen`（パスは DSL ファイルのあるフォルダからの相対パス。省略した項目は既定値）:
+
+| キー | 内容 | 既定値（`main_window.tkui.json` の場合） |
+|---|---|---|
+| `python.className` | 生成するクラスの名前 | `MainWindow`（ファイル名から） |
+| `python.file` | 出力先 | `main_window.py` |
+| `cpp.className` / `cpp.header` / `cpp.source` | 同上（C++ の生成は未実装） | `MainWindow` / `main_window.hpp` / `main_window.cpp` |
 
 ## 4. ノード
 
@@ -281,4 +290,3 @@ Tk の制約（同じ親の中で pack と grid を混在できない）を、ma
 - Canvas のアイテム
 - `tk.PanedWindow`（classic）のペインのオプション
 - `validatecommand`、`xscrollcommand` 等、`command` 以外のコールバックオプション
-- 生成されるクラス名の指定（現状は codegen 側で決める）

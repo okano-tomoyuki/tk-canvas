@@ -62,6 +62,17 @@ class Validator {
   }
 
   run(): Diagnostic[] {
+    for (const target of ['python', 'cpp'] as const) {
+      const className = this.doc.codegen?.[target]?.className;
+      const problem = className === undefined ? null : isValidIdentifier(className);
+      if (className !== undefined && problem) {
+        this.report(
+          'invalid-identifier',
+          ['codegen', target, 'className'],
+          `"${className}": ${IDENTIFIER_PROBLEM_MESSAGES[problem]}`,
+        );
+      }
+    }
     for (const name of Object.keys(this.doc.variables ?? {})) {
       this.declareName(name, 'variable', ['variables', name]);
     }

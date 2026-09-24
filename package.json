@@ -17,7 +17,8 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter tk-designer check:schema && pnpm test",
     "generate:schema": "pnpm --filter tk-designer generate:schema",
     "catalog:extract": "tclsh tools/catalog/extract.tcl packages/core/src/catalog/tk-raw.json",
-    "layout:record": "node tools/layout/record.mts"
+    "layout:record": "node tools/layout/record.mts",
+    "codegen:verify-python": "node tools/codegen/verify-python.mts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -9,8 +9,16 @@ const KEY_ORDER: readonly string[] = [
   // ドキュメント
   '$schema',
   'formatVersion',
+  'codegen',
   'variables',
   'root',
+  // codegen
+  'python',
+  'cpp',
+  'className',
+  'file',
+  'header',
+  'source',
   // ノード
   'id',
   'class',

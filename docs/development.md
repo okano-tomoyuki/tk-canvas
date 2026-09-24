@@ -7,6 +7,7 @@
 | Node.js 24 以上 | ビルド・テスト |
 | pnpm（`corepack enable pnpm`。バージョンは `package.json` の `packageManager` で固定） | パッケージ管理 |
 | Tk 入りの tclsh（Windows では MSYS2 の `mingw-w64-x86_64-tk` など） | ウィジェットカタログの抽出、レイアウトの検証データの記録のみ |
+| tkinter の使える Python | 生成したコードの検証のみ |
 
 ## 2. よく使うコマンド
 
@@ -19,6 +20,8 @@
 | `pnpm generate:schema` | DSL の JSON Schema を再生成（スキーマを変えたとき） |
 | `pnpm catalog:extract` | Tk からウィジェットカタログを抽出（[catalog.md](catalog.md)） |
 | `pnpm layout:record` | レイアウトの検証データを Tk で記録（[layout.md](layout.md)） |
+| `pnpm codegen:verify-python` | 生成した Python のコードを実行して検証（tkinter の使える Python が必要。[codegen-design.md](codegen-design.md) §6） |
+| `node packages/cli/dist/cli.js generate <file.tkui.json>` | CLI でコードを生成（`--force` で手編集された区間も上書き、`--check` で最新かだけを調べる） |
 
 ## 3. 拡張のデバッグ実行
 

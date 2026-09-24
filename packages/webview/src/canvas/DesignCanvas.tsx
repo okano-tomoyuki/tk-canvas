@@ -12,6 +12,7 @@ import {
 } from '@tk-designer/core';
 import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { addWidgetAt, moveWidgetTo } from '../editing.ts';
+import { postMessage } from '../vscode.ts';
 import { useDocumentStore, useUiStore } from '../store/stores.ts';
 import { createCanvasMeasure, createMetrics } from './metrics.ts';
 import { WidgetView } from './WidgetView.tsx';
@@ -57,6 +58,17 @@ export function DesignCanvas() {
 
   return (
     <section className="panel canvas-panel" aria-label="キャンバス">
+      <div className="canvas-toolbar">
+        <button
+          type="button"
+          title="DSL の codegen の設定に従ってコードを生成する（既存のファイルはマーカー区間だけを更新）"
+          onClick={() => {
+            postMessage({ type: 'generateCode' });
+          }}
+        >
+          コード生成
+        </button>
+      </div>
       <div className="design-window" style={{ width: root.rect.width }}>
         <div className="design-window-title">{doc.root.window?.title ?? doc.root.id}</div>
         {/* 背景のクリックはウィンドウ（ルート）の選択 */}

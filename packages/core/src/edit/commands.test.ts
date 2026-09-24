@@ -330,3 +330,13 @@ describe('batch', () => {
     expect(BASE.variables).toBeUndefined();
   });
 });
+
+describe('setCodegen', () => {
+  it('設定と削除', () => {
+    const set = run({ type: 'setCodegen', codegen: { python: {} } });
+    expect(set.codegen).toEqual({ python: {} });
+    expectValid(set);
+    const cleared = applyCommand(set, { type: 'setCodegen', codegen: {} });
+    expect(cleared.ok && cleared.document.codegen).toBeUndefined();
+  });
+});

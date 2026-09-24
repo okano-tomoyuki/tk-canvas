@@ -9,6 +9,7 @@ import { isValidIdentifier } from '../identifier.ts';
 import { containerKindOf } from '../dsl/placement.ts';
 import type {
   Binding,
+  CodegenSettings,
   Layout,
   OptionValue,
   Placement,
@@ -71,6 +72,8 @@ export type EditCommand =
   | { readonly type: 'setBindings'; readonly id: string; readonly bindings: readonly Binding[] }
   /** ハンドラの改名。command と bindings の参照をすべて置き換える */
   | { readonly type: 'renameHandler'; readonly name: string; readonly newName: string }
+  /** コード生成の設定（docs/adr/0010）。空なら codegen ごと削除する */
+  | { readonly type: 'setCodegen'; readonly codegen: CodegenSettings }
   /** 複数のコマンドを1つの変更としてまとめて適用する（途中で失敗したら何も変えない。Undo も1回） */
   | { readonly type: 'batch'; readonly commands: readonly EditCommand[] };
 
@@ -267,6 +270,12 @@ function apply(doc: TkuiDocument, command: EditCommand): void {
           (node.options ?? {})[key] = { handler: command.newName };
         },
       );
+      return;
+    }
+
+    case 'setCodegen': {
+      const codegen = removeUndefined({ ...command.codegen });
+      setOrDelete(doc, 'codegen', Object.keys(codegen).length > 0 ? codegen : undefined);
       return;
     }
 

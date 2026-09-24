@@ -17,4 +17,6 @@ export type ExtensionToWebviewMessage =
 
 export type WebviewToExtensionMessage =
   | { readonly type: 'ready' }
-  | { readonly type: 'edit'; readonly requestId: number; readonly command: EditCommand };
+  | { readonly type: 'edit'; readonly requestId: number; readonly command: EditCommand }
+  /** コード生成（docs/adr/0010）。生成・書き込み・結果の通知は拡張が行う */
+  | { readonly type: 'generateCode' };

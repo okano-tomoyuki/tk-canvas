@@ -38,13 +38,19 @@
 ### データの流れ
 
 ```
-[Webview] 操作 → コマンド生成 → (楽観的にローカル反映) → postMessage(command, baseVersion)
-[拡張]   コマンド適用 (core) → シリアライズ → WorkspaceEdit で TextDocument に反映
-[拡張]   onDidChangeTextDocument → パース・検証 → postMessage(document, version) → [Webview] ドキュメントストア更新
+[Webview] 操作 → コマンド生成 → (楽観的にローカル反映) → postMessage(edit: requestId, command)
+[拡張]   コマンドを TextDocument の現在の内容に適用 (core) → 正規形でシリアライズ → 最小範囲の WorkspaceEdit
+[拡張]   onDidChangeTextDocument → postMessage(document: version, text) → [Webview] 確定内容を更新
+[拡張]   postMessage(editResult: requestId, ok) → [Webview] 応答待ちがなくなれば確定内容に揃える
 ```
 
 - テキストエディタでの直接編集・Undo/Redo も同じ `onDidChangeTextDocument` 経由で Webview に届くため、経路が1本になる。
-- ドキュメントのバージョン番号で、Webview の楽観的更新と拡張側の実際の状態との食い違いを検出する（食い違えば拡張側の状態を正として上書き）。
+- コマンドは「どのウィジェットをどう変えるか」という意図で表すため、拡張は Webview が見ていた版ではなく**現在の内容**に適用する。
+  版番号による競合検出（当初案）は行わない。
+- Webview は応答待ちの編集がある間は楽観的に反映した表示を保ち、すべての応答が返った時点で拡張側の確定内容に揃える。
+  拡張が拒否した編集は、この時点で表示から消える。
+
+（2026-09-24 追記: 実装時に、版番号による競合検出から requestId による応答待ち管理に変更した。詳細は [editing.md](../editing.md)。）
 
 ## 影響
 

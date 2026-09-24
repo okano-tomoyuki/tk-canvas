@@ -3,14 +3,184 @@
   "root": {
     "id": "main_window",
     "class": "tk.Tk",
-    "window": { "title": "Hello", "geometry": "320x120" },
-    "layout": { "manager": "pack" },
+    "window": {
+      "title": "Hello",
+      "geometry": "320x120"
+    },
+    "layout": {
+      "manager": "pack"
+    },
     "children": [
       {
-        "id": "greeting_label",
+        "id": "greet",
         "class": "ttk.Label",
-        "options": { "text": "Hello, Tk!" },
-        "placement": { "pady": 16 }
+        "options": {
+          "text": "Hello, Tk!"
+        },
+        "placement": {
+          "pady": 16
+        }
+      },
+      {
+        "id": "frame1",
+        "class": "tk.Frame",
+        "layout": {
+          "manager": "grid"
+        },
+        "children": [
+          {
+            "id": "button1",
+            "class": "ttk.Button",
+            "options": {
+              "text": "button1"
+            },
+            "placement": {
+              "row": 0,
+              "column": 0
+            }
+          },
+          {
+            "id": "button2",
+            "class": "ttk.Button",
+            "options": {
+              "text": "button2"
+            },
+            "placement": {
+              "row": 4,
+              "column": 0
+            }
+          },
+          {
+            "id": "button3",
+            "class": "ttk.Button",
+            "options": {
+              "text": "button3"
+            },
+            "placement": {
+              "row": 5,
+              "column": 0
+            }
+          },
+          {
+            "id": "button4",
+            "class": "ttk.Button",
+            "options": {
+              "text": "button4"
+            },
+            "placement": {
+              "row": 6,
+              "column": 0
+            }
+          },
+          {
+            "id": "text1",
+            "class": "tk.Text",
+            "placement": {
+              "row": 1,
+              "column": 0
+            }
+          },
+          {
+            "id": "entry1",
+            "class": "ttk.Entry",
+            "placement": {
+              "row": 2,
+              "column": 0
+            }
+          },
+          {
+            "id": "entry2",
+            "class": "ttk.Entry",
+            "placement": {
+              "row": 3,
+              "column": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "notebook1",
+        "class": "ttk.Notebook",
+        "children": [
+          {
+            "id": "frame2",
+            "class": "tk.Frame",
+            "layout": {
+              "manager": "grid"
+            },
+            "placement": {
+              "text": "frame2"
+            },
+            "children": [
+              {
+                "id": "canvas1",
+                "class": "tk.Canvas",
+                "placement": {
+                  "row": 0,
+                  "column": 0
+                }
+              },
+              {
+                "id": "text2",
+                "class": "tk.Text",
+                "placement": {
+                  "row": 1,
+                  "column": 0
+                }
+              },
+              {
+                "id": "combobox1",
+                "class": "ttk.Combobox",
+                "placement": {
+                  "row": 2,
+                  "column": 0
+                }
+              },
+              {
+                "id": "radiobutton1",
+                "class": "ttk.Radiobutton",
+                "options": {
+                  "text": "radiobutton1"
+                },
+                "placement": {
+                  "row": 3,
+                  "column": 0
+                }
+              },
+              {
+                "id": "radiobutton2",
+                "class": "ttk.Radiobutton",
+                "options": {
+                  "text": "radiobutton2"
+                },
+                "placement": {
+                  "row": 4,
+                  "column": 0
+                }
+              }
+            ]
+          },
+          {
+            "id": "frame3",
+            "class": "tk.Frame",
+            "layout": {
+              "manager": "grid"
+            },
+            "placement": {
+              "text": "frame3"
+            }
+          },
+          {
+            "id": "frame4",
+            "class": "tk.Frame",
+            "layout": {
+              "manager": "grid"
+            },
+            "placement": {
+              "text": "frame4"
+            }
+          }
+        ]
       }
     ]
   }

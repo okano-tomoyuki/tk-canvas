@@ -1,32 +1,30 @@
-import type { Diagnostic } from '@tk-designer/core';
-import { useDocument } from './useDocument.ts';
+import { Inspector } from './components/Inspector.tsx';
+import { Palette } from './components/Palette.tsx';
+import { StatusPanel } from './components/StatusPanel.tsx';
+import { WidgetTree } from './components/WidgetTree.tsx';
+import { useDocumentStore } from './store/stores.ts';
 
 export function App() {
-  const state = useDocument();
+  const status = useDocumentStore((s) => s.status);
+  const hasDocument = useDocumentStore((s) => s.document !== undefined);
 
-  if (state.status === 'loading') {
-    return <p>読み込み中…</p>;
+  if (status === 'loading') return <p>読み込み中…</p>;
+  if (!hasDocument) {
+    return (
+      <main>
+        <p>
+          ファイルの内容が不正なため、デザイナーを表示できません。テキストエディタで修正してください。
+        </p>
+        <StatusPanel />
+      </main>
+    );
   }
   return (
-    <div>
-      <h2>tk-designer</h2>
-      <p>version: {state.version}</p>
-      <DiagnosticList diagnostics={state.diagnostics} />
-      {state.document && <pre>{JSON.stringify(state.document, null, 2)}</pre>}
-    </div>
-  );
-}
-
-function DiagnosticList({ diagnostics }: { readonly diagnostics: readonly Diagnostic[] }) {
-  if (diagnostics.length === 0) return null;
-  return (
-    <ul role="alert">
-      {diagnostics.map((d, i) => (
-        // 診断は毎回作り直される一覧で並べ替えも起きないため、添字をキーにしてよい
-        <li key={i}>
-          [{d.severity}] {d.path.join('.') || '(ルート)'}: {d.message}
-        </li>
-      ))}
-    </ul>
+    <main className="layout">
+      <Palette />
+      <WidgetTree />
+      <Inspector />
+      <StatusPanel />
+    </main>
   );
 }

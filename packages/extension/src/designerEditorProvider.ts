@@ -1,5 +1,10 @@
-import type { ExtensionToWebviewMessage, WebviewToExtensionMessage } from '@tk-designer/core';
+import type {
+  EditCommand,
+  ExtensionToWebviewMessage,
+  WebviewToExtensionMessage,
+} from '@tk-designer/core';
 import * as vscode from 'vscode';
+import { applyEditCommand } from './applyEditCommand.ts';
 
 /**
  * *.tkui.json を開くデザイナー。TextDocument を唯一の正とする（docs/adr/0006）。
@@ -29,13 +34,27 @@ export class DesignerEditorProvider implements vscode.CustomTextEditorProvider {
     const postDocument = () =>
       post({ type: 'document', version: document.version, text: document.getText() });
 
+    // 編集は届いた順に1つずつ適用する（WorkspaceEdit の適用が重ならないように）
+    let editQueue = Promise.resolve();
+    const enqueueEdit = (requestId: number, command: EditCommand) => {
+      editQueue = editQueue.then(async () => {
+        // 予期しない例外で後続の編集まで止まらないよう、ここで結果に変換する
+        const result = await applyEditCommand(document, command).catch((e: unknown) => ({
+          ok: false as const,
+          error: `予期しないエラー: ${e instanceof Error ? e.message : String(e)}`,
+        }));
+        await post({ type: 'editResult', requestId, ...result });
+      });
+    };
+
     const subscriptions = [
       panel.webview.onDidReceiveMessage((message: WebviewToExtensionMessage) => {
-        // メッセージ種別が増えるまでの間、case が常に真と判定されるため抑止する
         switch (message.type) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           case 'ready':
             void postDocument();
+            break;
+          case 'edit':
+            enqueueEdit(message.requestId, message.command);
             break;
         }
       }),

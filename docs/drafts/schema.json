@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tkinter GUI DSL Schema",
+  "type": "object",
+
+  "properties": {
+    "window": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "size": {
+          "type": "string",
+          "pattern": "^[0-9]+x[0-9]+$"
+        }
+      },
+      "required": ["title", "size"]
+    },
+
+    "root": { "$ref": "#/definitions/control" }
+  },
+
+  "required": ["window", "root"],
+
+  "definitions": {
+    "control": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+
+        "properties": {
+          "type": "object",
+          "description": "Widget-specific properties (text, width, height, etc.)"
+        },
+
+        "layoutPolicy": {
+          "type": "object",
+          "description": "Container-level geometry manager",
+          "properties": {
+            "manager": {
+              "type": "string",
+              "enum": ["pack", "grid", "place"]
+            }
+          },
+          "required": ["manager"]
+        },
+
+        "layout": {
+          "type": "object",
+          "description": "Layout parameters for the selected geometry manager",
+          "properties": {
+            "pack": {
+              "type": "object",
+              "properties": {
+                "side": {
+                  "type": "string",
+                  "enum": ["left", "right", "top", "bottom"]
+                },
+                "padx": { "type": "number" },
+                "pady": { "type": "number" },
+                "fill": {
+                  "type": "string",
+                  "enum": ["x", "y", "both", "none"]
+                },
+                "expand": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            },
+
+            "grid": {
+              "type": "object",
+              "properties": {
+                "row": { "type": "number" },
+                "column": { "type": "number" },
+                "rowspan": { "type": "number" },
+                "columnspan": { "type": "number" },
+                "sticky": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+
+            "place": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "width": { "type": "number" },
+                "height": { "type": "number" },
+                "relx": { "type": "number" },
+                "rely": { "type": "number" },
+                "relwidth": { "type": "number" },
+                "relheight": { "type": "number" },
+                "anchor": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "events": {
+          "type": "object",
+          "description": "Event handlers",
+          "properties": {
+            "onClick": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/control" }
+        }
+      },
+
+      "required": ["id", "type"],
+      "additionalProperties": false
+    }
+  }
+}

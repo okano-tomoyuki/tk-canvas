@@ -1,5 +1,6 @@
 import { DesignCanvas } from './canvas/DesignCanvas.tsx';
 import { Inspector } from './components/inspector/Inspector.tsx';
+import { MembersPanel } from './components/MembersPanel.tsx';
 import { Palette } from './components/Palette.tsx';
 import { StatusPanel } from './components/StatusPanel.tsx';
 import { WidgetTree } from './components/WidgetTree.tsx';
@@ -25,6 +26,7 @@ export function App() {
       <div className="sidebar">
         <Palette />
         <WidgetTree />
+        <MembersPanel />
       </div>
       <DesignCanvas />
       <Inspector />

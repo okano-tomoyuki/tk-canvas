@@ -2,6 +2,7 @@ import { jsonPathOf } from '@tk-designer/core';
 import { renameWidget } from '../../editing.ts';
 import { useDocumentStore, useSelectedNode } from '../../store/stores.ts';
 import { messagesAt } from './diagnostics.ts';
+import { EventsSection } from './EventsSection.tsx';
 import { FieldRow, TextField } from './fields.tsx';
 import { LayoutSection } from './LayoutSection.tsx';
 import { OptionsSection } from './OptionsSection.tsx';
@@ -56,6 +57,7 @@ export function Inspector() {
       )}
       <LayoutSection node={node} nodePath={nodePath} diagnostics={diagnostics} />
       <OptionsSection key={node.id} node={node} nodePath={nodePath} diagnostics={diagnostics} />
+      <EventsSection node={node} nodePath={nodePath} diagnostics={diagnostics} />
     </section>
   );
 }

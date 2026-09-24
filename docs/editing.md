@@ -26,6 +26,12 @@
 | `setPlacement` | placement を設定・削除 | |
 | `setLayout` | layout を設定・削除 | manager が変わると子の placement を初期値に置き換える（grid なら上から順に行を割り当てる） |
 | `setWindow` | ルートの window（wm 系の設定）を設定 | 値が undefined の項目は削除し、すべて空なら window ごと削除する |
+| `setVariable` | 変数の追加・変更 | 名前はウィジェット・ハンドラと重複できない |
+| `removeVariable` | 変数の削除 | その変数を参照しているオプションも削除する（参照切れを残さない） |
+| `renameVariable` | 変数の改名 | 参照もすべて新しい名前に置き換える |
+| `setBindings` | ウィジェットの bindings を置き換える | 空なら bindings ごと削除する |
+| `renameHandler` | ハンドラの改名 | command と bindings の参照をすべて置き換える。既存のハンドラ名への改名は統合として許す |
+| `batch` | 複数のコマンドをまとめて適用する | 途中で失敗したら何も変えない。Undo も1回（例: 変数を作ってオプションから参照する） |
 
 コマンドは失敗すると理由を返す（`{ ok: false, error }`）。適用結果は常に検証（dsl-spec.md §11）を通る状態を保つことを、テストで確認している。
 
@@ -50,7 +56,8 @@ Undo/Redo は VS Code のテキスト Undo がそのまま使われ、結果は 
 | ウィンドウ | ルートのみ。title、geometry、resizable、minsize / maxsize（`setWindow`） |
 | 配置 | 親の置き方（pack / grid / place / Notebook のタブ / PanedWindow のペイン）に応じた placement の項目（`setPlacement`） |
 | レイアウト | layout で子を並べるコンテナのみ。manager、propagate、grid の行・列ごとの weight / minsize / pad / uniform（`setLayout`） |
-| オプション | カタログの「よく使うオプション」と設定済みのオプション。「すべてのオプションを表示」で残りも表示する（`setOption`） |
+| オプション | カタログの「よく使うオプション」と設定済みのオプション。「すべてのオプションを表示」で残りも表示する（`setOption`）。変数参照の欄では「＋ 新しい変数を作成」で、変数の作成と参照の設定を1回の操作で行える |
+| イベント | command（シグネチャが定義されているコールバック）と bind の一覧。bind の追加時は、未使用のイベント候補とそれに合うハンドラ名（例: `on_entry1_return`）を初期値にする |
 
 入力の決まり:
 
@@ -62,8 +69,9 @@ Undo/Redo は VS Code のテキスト Undo がそのまま使われ、結果は 
 - オプション名の後ろの `*` は、生成時にしか指定できないオプション。
 - 外部（Undo、テキストエディタでの編集）で値が変わると、入力中の内容を捨てて新しい値を表示する。
 
+サイドバーの「変数」「ハンドラ」では、変数の追加・改名・型と初期値の変更・削除と、ハンドラの一覧（参照数・シグネチャ）・改名を行う。
+ハンドラの一覧でシグネチャが2種類表示されるものは、検証エラー（handler-signature-conflict）になっている。
+
 ## 5. 今後の課題
 
 - ドラッグなどの連続操作は、確定時に1コマンドだけ送る（途中経過は UI ストアで表示する）。
-- 変数・bindings を編集するコマンドと UI（段階 B）。
-- 1回の操作で複数のコマンドが必要になる場合に備え、複数コマンドを1回の WorkspaceEdit にまとめる仕組みを検討する。

@@ -440,3 +440,53 @@ select {
   width: 100%;
   min-width: 2.5em;
 }
+
+/* ---- 変数・ハンドラ・bind の表 ---- */
+
+.members,
+.bindings {
+  width: 100%;
+  margin-bottom: 6px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.members-name {
+  width: 38%;
+}
+
+.members-type {
+  width: 30%;
+}
+
+.members-action {
+  width: 2.2em;
+}
+
+.members td {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.members th,
+.bindings th {
+  font-weight: normal;
+  color: var(--vscode-descriptionForeground);
+  text-align: left;
+}
+
+.members td,
+.bindings td {
+  padding: 1px 2px;
+}
+
+.members td.error {
+  color: var(--vscode-errorForeground);
+}
+
+.members select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}

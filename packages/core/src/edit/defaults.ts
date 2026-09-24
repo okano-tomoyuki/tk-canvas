@@ -17,6 +17,16 @@ export function nextWidgetId(doc: TkuiDocument, className: string): string {
   }
 }
 
+/** 他と重ならないメンバ名を作る（base が空いていればそのまま、使われていれば base2, base3, ...） */
+export function nextMemberName(doc: TkuiDocument, base: string): string {
+  const used = collectMemberNames(doc);
+  if (!used.has(base)) return base;
+  for (let n = 2; ; n++) {
+    const candidate = `${base}${String(n)}`;
+    if (!used.has(candidate)) return candidate;
+  }
+}
+
 /** 追加時のオプション。表示文字列を持つウィジェットには id を仮の文字列として入れる */
 export function defaultOptions(
   className: string,

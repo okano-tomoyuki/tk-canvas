@@ -27,7 +27,7 @@ export type {
 } from './catalog/types.ts';
 
 export { applyCommand, type CommandResult, type EditCommand } from './edit/commands.ts';
-export { defaultPlacement, nextWidgetId } from './edit/defaults.ts';
+export { defaultPlacement, nextMemberName, nextWidgetId } from './edit/defaults.ts';
 export { minimalTextEdit, type TextEdit } from './edit/textEdit.ts';
 export {
   formatValue,
@@ -51,3 +51,9 @@ export {
 
 export { computeLayout, type LayoutOptions } from './layout/engine.ts';
 export type { Insets, LayoutBox, LayoutMetrics, LayoutResult, Rect, Size } from './layout/types.ts';
+export {
+  collectHandlers,
+  countVariableReferences,
+  sequenceToName,
+  type HandlerUsage,
+} from './edit/members.ts';

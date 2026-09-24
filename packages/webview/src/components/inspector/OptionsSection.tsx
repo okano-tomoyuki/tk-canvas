@@ -1,7 +1,6 @@
 import {
   formatValue,
   getWidgetCatalog,
-  isValidIdentifier,
   parseOptionInput,
   type AnyNode,
   type Diagnostic,
@@ -10,6 +9,7 @@ import {
   type OptionValue,
 } from '@tk-designer/core';
 import { useState } from 'react';
+import { createVariableFor } from '../../editing.ts';
 import { useDocumentStore } from '../../store/stores.ts';
 import { messagesAt } from './diagnostics.ts';
 import { booleanOptions, enumOptions, SelectField, TextField, toBoolean } from './fields.tsx';
@@ -28,9 +28,15 @@ export function OptionsSection({ node, nodePath, diagnostics }: OptionsSectionPr
   const widgetClass = getWidgetCatalog().classes.get(node.class);
   if (!widgetClass) return null;
 
-  const all = [...widgetClass.options.keys()].sort();
-  const common = widgetClass.commonOptions.length > 0 ? widgetClass.commonOptions : all;
-  const set = Object.keys(node.options ?? {}).filter((name) => widgetClass.options.has(name));
+  // コールバック（command 等）はイベント欄で編集する
+  const all = [...widgetClass.options.values()]
+    .filter((o) => o.type.kind !== 'callback')
+    .map((o) => o.name)
+    .sort();
+  const common = (widgetClass.commonOptions.length > 0 ? widgetClass.commonOptions : all).filter(
+    (n) => all.includes(n),
+  );
+  const set = Object.keys(node.options ?? {}).filter((name) => all.includes(name));
   const names = showAll
     ? [...common, ...all.filter((n) => !common.includes(n))]
     : unique([...common, ...set]);
@@ -112,6 +118,7 @@ function OptionField({ nodeId, info, value, error }: OptionFieldProps) {
         .filter(([, v]) => type.variableTypes.includes(v.type))
         .map(([name, v]) => ({ value: name, label: `${name}（${v.type}）` }));
       const current = typeof value === 'object' && 'var' in value ? value.var : '';
+      const [firstType = 'StringVar'] = type.variableTypes;
       return (
         <SelectField
           label={label}
@@ -125,43 +132,15 @@ function OptionField({ nodeId, info, value, error }: OptionFieldProps) {
                   : `（${type.variableTypes.join(' / ')} の変数がありません）`,
             },
             ...candidates,
+            { value: CREATE_VARIABLE, label: `＋ 新しい ${firstType} を作成` },
           ]}
           error={error}
           onChange={(v) => {
-            set(v === '' ? undefined : { var: v });
-          }}
-        />
-      );
-    }
-    case 'callback': {
-      const current = typeof value === 'object' && 'handler' in value ? value.handler : '';
-      if (!type.signature) {
-        return (
-          <SelectField
-            label={label}
-            value=""
-            options={[{ value: '', label: '（ハンドラ参照は未対応）' }]}
-            error={error}
-            disabled
-            onChange={() => undefined}
-          />
-        );
-      }
-      return (
-        <TextField
-          label={label}
-          value={current}
-          placeholder="メソッド名"
-          error={error}
-          onCommit={(text) => {
-            const name = text.trim();
-            if (name === '') {
-              set(undefined);
-              return undefined;
+            if (v === CREATE_VARIABLE) {
+              createVariableFor(nodeId, info.name, firstType);
+              return;
             }
-            if (isValidIdentifier(name)) return 'メソッド名として使えない名前です';
-            set({ handler: name });
-            return undefined;
+            set(v === '' ? undefined : { var: v });
           }}
         />
       );
@@ -183,6 +162,9 @@ function OptionField({ nodeId, info, value, error }: OptionFieldProps) {
       );
   }
 }
+
+/** 変数の選択肢のうち「新しい変数を作成」を表す値（変数名として使えない文字を含める） */
+const CREATE_VARIABLE = '<create>';
 
 function unique(values: readonly string[]): string[] {
   return [...new Set(values)];

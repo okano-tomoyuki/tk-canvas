@@ -1,7 +1,14 @@
 /**
  * UI から呼び出す編集操作。選択状態を踏まえてコマンドを組み立て、ドキュメントストアに渡す。
  */
-import { findNode, getWidgetCatalog, nextWidgetId } from '@tk-designer/core';
+import {
+  findNode,
+  getWidgetCatalog,
+  nextMemberName,
+  nextWidgetId,
+  sequenceToName,
+  type VariableType,
+} from '@tk-designer/core';
 import { documentStore, uiStore } from './store/stores.ts';
 
 function current() {
@@ -62,4 +69,50 @@ export function renameWidget(id: string, newId: string): void {
   if (documentStore.getState().dispatch({ type: 'renameWidget', id, newId })) {
     uiStore.getState().select(newId);
   }
+}
+
+const VARIABLE_NAME_BASES: Readonly<Record<VariableType, string>> = {
+  StringVar: 'text_var',
+  IntVar: 'int_var',
+  DoubleVar: 'double_var',
+  BooleanVar: 'bool_var',
+};
+
+/** 変数を追加する */
+export function addVariable(type: VariableType): void {
+  const { document } = documentStore.getState();
+  if (!document) return;
+  const name = nextMemberName(document, VARIABLE_NAME_BASES[type]);
+  documentStore.getState().dispatch({ type: 'setVariable', name, variable: { type } });
+}
+
+/** オプション用の変数を新しく作り、そのオプションから参照する（Undo 1回で両方戻る） */
+export function createVariableFor(nodeId: string, optionName: string, type: VariableType): void {
+  const { document } = documentStore.getState();
+  if (!document) return;
+  const suffix = optionName.replace(/variable$/, '') || 'value';
+  const name = nextMemberName(document, `${nodeId}_${suffix}`);
+  documentStore.getState().dispatch({
+    type: 'batch',
+    commands: [
+      { type: 'setVariable', name, variable: { type } },
+      { type: 'setOption', id: nodeId, name: optionName, value: { var: name } },
+    ],
+  });
+}
+
+/** bind を1つ追加する。まだ使っていないイベント候補と、それに合うハンドラ名を初期値にする */
+export function addBinding(nodeId: string): void {
+  const { document } = documentStore.getState();
+  const node = document && findNode(document, nodeId)?.node;
+  if (!document || !node) return;
+  const used = new Set((node.bindings ?? []).map((b) => b.sequence));
+  const candidates = getWidgetCatalog().classes.get(node.class)?.events ?? ['<Button-1>'];
+  const sequence = candidates.find((c) => !used.has(c)) ?? '<Button-1>';
+  const handler = nextMemberName(document, `on_${nodeId}_${sequenceToName(sequence)}`);
+  documentStore.getState().dispatch({
+    type: 'setBindings',
+    id: nodeId,
+    bindings: [...(node.bindings ?? []), { sequence, handler }],
+  });
 }

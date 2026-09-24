@@ -33,6 +33,8 @@ interface TextFieldProps {
   readonly label: string;
   readonly value: string;
   readonly placeholder?: string;
+  /** 入力候補（datalist の id） */
+  readonly list?: string;
   /** 検証（診断）によるエラー */
   readonly error?: string | undefined;
   /** 確定時に呼ばれる。入力が不正ならエラーメッセージを返す（確定しない） */
@@ -75,12 +77,12 @@ function useCommittedDraft(value: string, onCommit: (text: string) => string | u
   return { error, inputProps };
 }
 
-export function TextField({ label, value, placeholder, error, onCommit }: TextFieldProps) {
+export function TextField({ label, value, placeholder, list, error, onCommit }: TextFieldProps) {
   const id = useId();
   const draft = useCommittedDraft(value, onCommit);
   return (
     <FieldRow label={label} htmlFor={id} error={draft.error ?? error}>
-      <input id={id} placeholder={placeholder} {...draft.inputProps} />
+      <input id={id} placeholder={placeholder} list={list} {...draft.inputProps} />
     </FieldRow>
   );
 }
@@ -89,12 +91,21 @@ interface CompactInputProps {
   readonly label: string;
   readonly value: string;
   readonly placeholder?: string;
+  /** 入力候補（datalist の id） */
+  readonly list?: string;
   readonly error?: string | undefined;
   readonly onCommit: (text: string) => string | undefined;
 }
 
 /** 表の中などで使う、見出しのない入力欄。エラーは枠の色とツールチップで示す */
-export function CompactInput({ label, value, placeholder, error, onCommit }: CompactInputProps) {
+export function CompactInput({
+  label,
+  value,
+  placeholder,
+  list,
+  error,
+  onCommit,
+}: CompactInputProps) {
   const draft = useCommittedDraft(value, onCommit);
   const message = draft.error ?? error;
   return (
@@ -104,6 +115,7 @@ export function CompactInput({ label, value, placeholder, error, onCommit }: Com
       title={message}
       className={message ? 'compact-input has-error' : 'compact-input'}
       placeholder={placeholder}
+      list={list}
       {...draft.inputProps}
     />
   );

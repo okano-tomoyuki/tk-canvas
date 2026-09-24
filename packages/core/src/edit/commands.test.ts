@@ -213,3 +213,120 @@ describe('setWindow', () => {
     expect(cleared.ok && cleared.document.root.window).toBeUndefined();
   });
 });
+
+describe('変数', () => {
+  const WITH_VAR = run(
+    { type: 'setVariable', name: 'user_name', variable: { type: 'StringVar', value: '' } },
+    { type: 'addWidget', parentId: 'form', id: 'name_entry', className: 'ttk.Entry' },
+    { type: 'setOption', id: 'name_entry', name: 'textvariable', value: { var: 'user_name' } },
+  );
+
+  it('追加・変更', () => {
+    expect(WITH_VAR.variables).toEqual({ user_name: { type: 'StringVar', value: '' } });
+    expectValid(WITH_VAR);
+    const changed = applyCommand(WITH_VAR, {
+      type: 'setVariable',
+      name: 'user_name',
+      variable: { type: 'StringVar', value: 'guest' },
+    });
+    expect(changed.ok && changed.document.variables?.user_name).toEqual({
+      type: 'StringVar',
+      value: 'guest',
+    });
+  });
+
+  it('既存のウィジェットと同じ名前では追加できない', () => {
+    expect(errorOf({ type: 'setVariable', name: 'form', variable: { type: 'IntVar' } })).toContain(
+      '既に使われています',
+    );
+  });
+
+  it('改名すると参照も置き換える', () => {
+    const result = applyCommand(WITH_VAR, {
+      type: 'renameVariable',
+      name: 'user_name',
+      newName: 'login',
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(Object.keys(result.document.variables ?? {})).toEqual(['login']);
+    expect(findNode(result.document, 'name_entry')?.node.options).toEqual({
+      textvariable: { var: 'login' },
+    });
+    expectValid(result.document);
+  });
+
+  it('削除すると参照しているオプションも削除する', () => {
+    const result = applyCommand(WITH_VAR, { type: 'removeVariable', name: 'user_name' });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.document.variables).toBeUndefined();
+    expect(findNode(result.document, 'name_entry')?.node.options).toBeUndefined();
+    expectValid(result.document);
+  });
+});
+
+describe('イベント', () => {
+  it('bindings の設定と、空にしたときの削除', () => {
+    const set = run({
+      type: 'setBindings',
+      id: 'ok_button',
+      bindings: [{ sequence: '<Return>', handler: 'on_submit' }],
+    });
+    expect(findNode(set, 'ok_button')?.node.bindings).toEqual([
+      { sequence: '<Return>', handler: 'on_submit' },
+    ]);
+    const cleared = applyCommand(set, { type: 'setBindings', id: 'ok_button', bindings: [] });
+    expect(cleared.ok && findNode(cleared.document, 'ok_button')?.node.bindings).toBeUndefined();
+  });
+
+  it('ハンドラの改名は command と bindings の両方に反映する', () => {
+    const doc = run(
+      { type: 'setOption', id: 'ok_button', name: 'command', value: { handler: 'on_ok' } },
+      {
+        type: 'setBindings',
+        id: 'ok_button',
+        bindings: [{ sequence: '<Return>', handler: 'on_ok' }],
+      },
+      { type: 'renameHandler', name: 'on_ok', newName: 'on_submit' },
+    );
+    const node = findNode(doc, 'ok_button')?.node;
+    expect(node?.options?.command).toEqual({ handler: 'on_submit' });
+    expect(node?.bindings).toEqual([{ sequence: '<Return>', handler: 'on_submit' }]);
+  });
+
+  it('ウィジェットと同じ名前へのハンドラの改名はできない', () => {
+    const doc = run({
+      type: 'setOption',
+      id: 'ok_button',
+      name: 'command',
+      value: { handler: 'on_ok' },
+    });
+    const result = applyCommand(doc, { type: 'renameHandler', name: 'on_ok', newName: 'form' });
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe('batch', () => {
+  it('まとめて適用する', () => {
+    const doc = run({
+      type: 'batch',
+      commands: [
+        { type: 'setVariable', name: 'agree', variable: { type: 'BooleanVar' } },
+        { type: 'addWidget', parentId: 'form', id: 'agree_check', className: 'ttk.Checkbutton' },
+        { type: 'setOption', id: 'agree_check', name: 'variable', value: { var: 'agree' } },
+      ],
+    });
+    expectValid(doc);
+  });
+
+  it('途中で失敗したら何も変えない', () => {
+    const result = applyCommand(BASE, {
+      type: 'batch',
+      commands: [
+        { type: 'setVariable', name: 'x', variable: { type: 'IntVar' } },
+        { type: 'removeWidget', id: 'main_window' },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(BASE.variables).toBeUndefined();
+  });
+});

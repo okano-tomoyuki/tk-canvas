@@ -50,6 +50,7 @@ export {
 } from './edit/tree.ts';
 
 export { computeLayout, type LayoutOptions } from './layout/engine.ts';
+export { findDropTarget, type DropTarget, type Point } from './layout/dropTarget.ts';
 export type { Insets, LayoutBox, LayoutMetrics, LayoutResult, Rect, Size } from './layout/types.ts';
 export {
   collectHandlers,

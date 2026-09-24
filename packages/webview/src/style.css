@@ -490,3 +490,53 @@ select {
   width: 100%;
   min-width: 0;
 }
+
+/* ---- 変数の参照・ドラッグ&ドロップ ---- */
+
+.variable-overlay {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed var(--vscode-charts-purple, #a371f7);
+  pointer-events: none;
+}
+
+.variable-tag {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  padding: 0 3px;
+  font-size: 10px;
+  line-height: 13px;
+  color: #fff;
+  background: var(--vscode-charts-purple, #a371f7);
+}
+
+.drop-container {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--vscode-charts-blue, #3794ff);
+  background: rgba(55, 148, 255, 0.06);
+  pointer-events: none;
+}
+
+.drop-indicator {
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--vscode-charts-blue, #3794ff);
+  pointer-events: none;
+}
+
+.drop-indicator-grid,
+.drop-indicator-notebook,
+.drop-indicator-paned {
+  background: rgba(55, 148, 255, 0.25);
+  border: 2px solid var(--vscode-charts-blue, #3794ff);
+}
+
+.drop-indicator-place {
+  border-radius: 50%;
+}
+
+.palette-items button[draggable='true'] {
+  cursor: grab;
+}

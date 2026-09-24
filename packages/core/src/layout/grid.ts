@@ -348,6 +348,32 @@ export function gridArrange(
   });
 }
 
+/**
+ * 行・列の境界の位置（コンテナの左上が原点）。columns[0] が最初の列の左端、columns[n] が n 列目の右端。
+ * 子がなくても、grid_columnconfigure 等で設定された行・列は含める。
+ */
+export function gridBoundaries(
+  items: readonly GridItem[],
+  config: GridConfig,
+  size: Size,
+  insets: Insets,
+): { readonly columns: number[]; readonly rows: number[] } {
+  const columns = axisOffsets(
+    axisItems(items, 'column'),
+    config.columns,
+    size.width - insets.left - insets.right,
+  );
+  const rows = axisOffsets(
+    axisItems(items, 'row'),
+    config.rows,
+    size.height - insets.top - insets.bottom,
+  );
+  return {
+    columns: [insets.left, ...columns.map((o) => insets.left + o)],
+    rows: [insets.top, ...rows.map((o) => insets.top + o)],
+  };
+}
+
 function axisOffsets(
   items: readonly AxisItem[],
   lines: ReadonlyMap<number, GridLineConfig>,

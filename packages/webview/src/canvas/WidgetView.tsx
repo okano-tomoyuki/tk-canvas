@@ -1,5 +1,6 @@
 import type { AnyNode, Rect } from '@tk-designer/core';
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
+import { useUiStore } from '../store/stores.ts';
 import { displayText } from './metrics.ts';
 
 interface WidgetViewProps {
@@ -66,6 +67,7 @@ const VISUALS: Readonly<Record<string, Visual>> = {
  * 1つのウィジェットの簡易的な見た目。実際の Tk の描画は再現せず、種類と位置・大きさが分かることを目的とする。
  */
 export function WidgetView({ node, rect, activeTab, onSelect }: WidgetViewProps) {
+  const setDragging = useUiStore((s) => s.setDragging);
   const visual = VISUALS[node.class] ?? 'generic';
   const style: CSSProperties = {
     left: rect.x,
@@ -89,6 +91,18 @@ export function WidgetView({ node, rect, activeTab, onSelect }: WidgetViewProps)
       style={style}
       title={`${node.id} (${node.class})`}
       onClick={handleClick}
+      // ドラッグで移動する（ドロップ先の判定はキャンバスが行う）
+      draggable
+      onDragStart={(e) => {
+        e.stopPropagation();
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', node.id);
+        onSelect(node.id);
+        setDragging({ kind: 'move', id: node.id });
+      }}
+      onDragEnd={() => {
+        setDragging(undefined);
+      }}
     >
       {renderContent(node, visual, activeTab, onSelect)}
     </div>

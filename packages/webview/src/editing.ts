@@ -7,6 +7,8 @@ import {
   nextMemberName,
   nextWidgetId,
   sequenceToName,
+  type DropTarget,
+  type EditCommand,
   type VariableType,
 } from '@tk-designer/core';
 import { documentStore, uiStore } from './store/stores.ts';
@@ -115,4 +117,35 @@ export function addBinding(nodeId: string): void {
     id: nodeId,
     bindings: [...(node.bindings ?? []), { sequence, handler }],
   });
+}
+
+/** 選択中のウィジェットの親を選択する */
+export function selectParent(): void {
+  const { selected } = current();
+  if (selected?.parent) uiStore.getState().select(selected.parent.id);
+}
+
+/** ドロップ先にウィジェットを追加して選択する（追加と配置の指定を Undo 1回にまとめる） */
+export function addWidgetAt(className: string, target: DropTarget): void {
+  const { document } = documentStore.getState();
+  if (!document) return;
+  const id = nextWidgetId(document, className);
+  const commands: EditCommand[] = [
+    { type: 'addWidget', parentId: target.parentId, id, className, index: target.index },
+  ];
+  if (target.placement) commands.push({ type: 'setPlacement', id, placement: target.placement });
+  if (documentStore.getState().dispatch({ type: 'batch', commands })) {
+    uiStore.getState().select(id);
+  }
+}
+
+/** ウィジェットをドロップ先へ移動する（移動と配置の変更を Undo 1回にまとめる） */
+export function moveWidgetTo(id: string, target: DropTarget): void {
+  const commands: EditCommand[] = [
+    { type: 'moveWidget', id, parentId: target.parentId, index: target.index },
+  ];
+  if (target.placement) commands.push({ type: 'setPlacement', id, placement: target.placement });
+  if (documentStore.getState().dispatch({ type: 'batch', commands })) {
+    uiStore.getState().select(id);
+  }
 }

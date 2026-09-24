@@ -19,6 +19,7 @@ import { containerKindOf } from '../dsl/placement.ts';
 import type { AnyNode } from '../edit/tree.ts';
 import {
   gridArrange,
+  gridBoundaries,
   gridRequest,
   type GridConfig,
   type GridItem,
@@ -27,7 +28,15 @@ import {
 import { idiv } from './math.ts';
 import { packArrange, packRequest, type PackItem } from './pack.ts';
 import { placeArrange } from './place.ts';
-import type { Insets, LayoutBox, LayoutMetrics, LayoutResult, Rect, Size } from './types.ts';
+import {
+  NO_INSETS,
+  type Insets,
+  type LayoutBox,
+  type LayoutMetrics,
+  type LayoutResult,
+  type Rect,
+  type Size,
+} from './types.ts';
 
 export interface LayoutOptions {
   /** Notebook の id → 表示するタブ（子の id）。未指定なら最初のタブ */
@@ -121,14 +130,26 @@ class LayoutEngine {
   // ---- 配置 -----------------------------------------------------------------
 
   private arrange(node: AnyNode, rect: Rect, mapped: boolean): void {
-    this.result.set(node.id, { rect, requested: this.request(node), mapped });
-
     const children = node.children ?? [];
     const kind = containerKindOf(node);
+    const size = { width: rect.width, height: rect.height };
+    const insets = kind ? this.metrics.insets(node) : NO_INSETS;
+    this.result.set(node.id, {
+      rect,
+      requested: this.request(node),
+      mapped,
+      ...(kind && {
+        content: {
+          x: rect.x + insets.left,
+          y: rect.y + insets.top,
+          width: Math.max(0, rect.width - insets.left - insets.right),
+          height: Math.max(0, rect.height - insets.top - insets.bottom),
+        },
+      }),
+      ...(kind === 'grid' && { grid: this.gridLines(node, children, rect, insets) }),
+    });
     if (!kind || children.length === 0) return;
 
-    const size = { width: rect.width, height: rect.height };
-    const insets = this.metrics.insets(node);
     const rects = this.arrangeChildren(node, kind, children, size, insets);
     const visible = this.visibleChildren(node, kind, children);
 
@@ -137,6 +158,15 @@ class LayoutEngine {
       const childMapped = mapped && visible[i] === true && r.width > 0 && r.height > 0;
       this.arrange(child, { ...r, x: rect.x + r.x, y: rect.y + r.y }, childMapped);
     });
+  }
+
+  /** grid の行・列の境界（ルート基準の座標） */
+  private gridLines(node: AnyNode, children: readonly WidgetNode[], rect: Rect, insets: Insets) {
+    const lines = gridBoundaries(this.gridItems(children), gridConfig(node), rect, insets);
+    return {
+      columns: lines.columns.map((x) => rect.x + x),
+      rows: lines.rows.map((y) => rect.y + y),
+    };
   }
 
   private arrangeChildren(

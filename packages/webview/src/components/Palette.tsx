@@ -1,5 +1,6 @@
 import { getWidgetCatalog, type WidgetCategory, type WidgetClassInfo } from '@tk-designer/core';
 import { addWidget } from '../editing.ts';
+import { useUiStore } from '../store/stores.ts';
 
 const CATEGORY_LABELS: Readonly<Record<Exclude<WidgetCategory, 'window'>, string>> = {
   container: 'コンテナ',
@@ -20,6 +21,7 @@ const GROUPS = Object.entries(CATEGORY_LABELS).map(([category, label]) => ({
 }));
 
 export function Palette() {
+  const setDragging = useUiStore((s) => s.setDragging);
   return (
     <section className="panel" aria-label="パレット">
       <h2>パレット</h2>
@@ -31,7 +33,16 @@ export function Palette() {
               <button
                 key={c.name}
                 type="button"
-                title={`${c.name} を追加`}
+                title={`${c.name} を追加（クリックで選択中の位置へ、ドラッグでキャンバスの任意の位置へ）`}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = 'copy';
+                  e.dataTransfer.setData('text/plain', c.name);
+                  setDragging({ kind: 'new', className: c.name });
+                }}
+                onDragEnd={() => {
+                  setDragging(undefined);
+                }}
                 onClick={() => {
                   addWidget(c.name);
                 }}

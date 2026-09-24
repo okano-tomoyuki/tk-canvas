@@ -23,6 +23,7 @@ const layout = computeLayout(doc, {
   insets: (node) => ({ left, top, right, bottom }), // コンテナの内側の余白（枠線・padding、Notebook のタブ領域）
 });
 layout.get('ok_button'); // { rect: {x, y, width, height}, requested: {width, height}, mapped }
+// コンテナは content（子を置ける領域）、grid のコンテナは grid（行・列の境界）も持つ
 ```
 
 - 位置はルートウィンドウの内側の左上を原点とする。

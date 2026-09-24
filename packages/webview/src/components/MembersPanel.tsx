@@ -11,7 +11,7 @@ import {
 } from '@tk-designer/core';
 import { useState } from 'react';
 import { addVariable } from '../editing.ts';
-import { useDocumentStore } from '../store/stores.ts';
+import { useDocumentStore, useUiStore } from '../store/stores.ts';
 import { CompactInput } from './inspector/fields.tsx';
 
 const SIGNATURE_LABELS = { none: '引数なし', value: '値', event: 'イベント' } as const;
@@ -21,6 +21,7 @@ export function MembersPanel() {
   const doc = useDocumentStore((s) => s.document);
   const dispatch = useDocumentStore((s) => s.dispatch);
   const [newType, setNewType] = useState<VariableType>('StringVar');
+  const hoverVariable = useUiStore((s) => s.hoverVariable);
   if (!doc) return null;
 
   const references = countVariableReferences(doc);
@@ -46,7 +47,16 @@ export function MembersPanel() {
         </thead>
         <tbody>
           {Object.entries(doc.variables ?? {}).map(([name, variable]) => (
-            <tr key={name}>
+            <tr
+              key={name}
+              // マウスを乗せると、この変数を参照しているウィジェットをキャンバスで強調する
+              onMouseEnter={() => {
+                hoverVariable(name);
+              }}
+              onMouseLeave={() => {
+                hoverVariable(undefined);
+              }}
+            >
               <td>
                 <CompactInput
                   label={`変数 ${name} の名前`}

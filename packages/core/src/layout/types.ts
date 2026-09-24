@@ -42,6 +42,10 @@ export interface LayoutBox {
   readonly requested: Size;
   /** 表示されるか（大きさが 0 以下になった、または Notebook の選択されていないタブの中身なら false） */
   readonly mapped: boolean;
+  /** 子を置ける領域（コンテナのみ。rect から内側の余白を除いたもの。位置は rect と同じ座標系） */
+  readonly content?: Rect;
+  /** grid の行・列の境界（grid で子を並べるコンテナのみ。位置は rect と同じ座標系） */
+  readonly grid?: { readonly columns: readonly number[]; readonly rows: readonly number[] };
 }
 
 /** ウィジェット id → 配置結果 */

@@ -8,12 +8,14 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 | ドキュメント | 内容 | 状態 |
 |---|---|---|
 | [vision.md](vision.md) | 目的・想定ユーザー・スコープ | 初版 |
+| [development.md](development.md) | 開発手順（環境・コマンド・デバッグ実行とトラブル対処） | 初版 |
 | [adr/](adr/) | 設計判断の記録（1判断1ファイル） | 随時追加 |
 | [dsl-design-notes.md](dsl-design-notes.md) | DSL 設計の検討メモ（ドラフトのレビュー・論点） | 完了（dsl-spec.md に反映済み） |
 | [codegen-design.md](codegen-design.md) | コード生成（マーカー区間更新）の設計・生成例 | 主要論点は決定済み（M3〜M5, M7, M8, M10 は未決） |
 | [dsl-spec.md](dsl-spec.md) | DSL 正式仕様（formatVersion 1） | 初版 |
 | [catalog.md](catalog.md) | ウィジェットカタログ（抽出・型推定・補足情報・更新手順） | 初版（補足は 23 クラス） |
 | [editing.md](editing.md) | 編集基盤（編集コマンド・拡張と Webview の同期） | 初版 |
+| [layout.md](layout.md) | レイアウトエンジン（pack / grid / place の移植と Tk との比較検証） | 初版（要求サイズの推定は未実装） |
 | [architecture.md](architecture.md) | パッケージ構成・データフロー・技術スタック | 初版（A3〜A5 は未決） |
 | [drafts/](drafts/) | DSL・コード生成の初期ドラフト（すり合わせ用の参考資料） | 参考 |
 | requirements.md | 機能要件・非機能要件 | 未着手 |

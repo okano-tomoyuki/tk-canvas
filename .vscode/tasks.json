@@ -2,11 +2,80 @@
   "version": "2.0.0",
   "tasks": [
     {
+      // 拡張と Webview の変更を監視して自動でビルドする（F5 のデバッグ実行前に起動する）
+      "label": "watch",
+      "dependsOn": ["watch:extension", "watch:webview"],
+      "presentation": { "reveal": "never" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "watch:extension",
+      "type": "shell",
+      "command": "pnpm --filter tk-designer run watch",
+      "isBackground": true,
+      // 公式テンプレートの $esbuild-watch（connor4312.esbuild-problem-matchers 拡張機能）と同じ内容を、
+      // 拡張機能のインストールなしで使えるようここに書く
+      "problemMatcher": {
+        "owner": "esbuild",
+        "fileLocation": ["relative", "${workspaceFolder}/packages/extension"],
+        "pattern": [
+          { "regexp": "^✘ \\[ERROR\\] (.+)$", "message": 1 },
+          { "regexp": "^\\s*$" },
+          { "regexp": "^\\s+(.+):(\\d+):(\\d+):$", "file": 1, "line": 2, "column": 3 }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[watch\\] build started",
+          "endsPattern": "^\\[watch\\] build finished"
+        }
+      },
+      "presentation": { "group": "watch", "reveal": "never" }
+    },
+    {
+      "label": "watch:webview",
+      "type": "shell",
+      "command": "pnpm --filter @tk-designer/webview run watch",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^\\s*(.+?):(\\d+):(\\d+):\\s+(error|ERROR)\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "build started",
+          "endsPattern": "built in \\d+m?s"
+        }
+      },
+      "presentation": { "group": "watch", "reveal": "never" }
+    },
+    {
       "label": "build",
       "type": "shell",
       "command": "pnpm build",
-      "group": { "kind": "build", "isDefault": true },
       "problemMatcher": []
+    },
+    {
+      // 予備の構成（Attach to Extension Host）用。デバッグポートを固定して開発用ウィンドウを起動する（docs/development.md）
+      "label": "launch-dev-host",
+      "type": "shell",
+      "command": "code",
+      "args": [
+        "--new-window",
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/extension",
+        "--inspect-brk-extensions=9339",
+        "${workspaceFolder}/samples"
+      ],
+      "dependsOn": "watch",
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent" }
     }
   ]
 }

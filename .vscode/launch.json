@@ -2,15 +2,37 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // VS Code 拡張機能の標準的なデバッグ構成（yo code の公式テンプレートと同じ形）
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/extension",
+        // 開発用ウィンドウでは他の拡張機能を読み込まない
+        "--disable-extensions",
         "${workspaceFolder}/samples"
       ],
+      // 拡張機能ホストのデバッグポートを固定する。js-debug の不具合を避けるため、この環境では
+      // [::1]:9339 → 127.0.0.1:9339 のポート転送を設定している（docs/development.md）
+      "port": 9339,
       "outFiles": ["${workspaceFolder}/packages/extension/dist/**/*.cjs"],
-      "preLaunchTask": "build"
+      "preLaunchTask": "watch"
+    },
+    {
+      // 予備。Run Extension でデバッガが拡張機能ホストに接続できない環境向け（docs/development.md）。
+      // 開発用ウィンドウをタスクで起動し、127.0.0.1 を指定して接続する
+      "name": "Attach to Extension Host (127.0.0.1)",
+      "type": "node",
+      "request": "attach",
+      "address": "127.0.0.1",
+      "port": 9339,
+      "timeout": 30000,
+      "continueOnAttach": true,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/packages/extension/dist/**/*.cjs"],
+      "skipFiles": ["<node_internals>/**"],
+      "preLaunchTask": "launch-dev-host"
     }
   ]
 }

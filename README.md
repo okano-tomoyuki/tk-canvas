@@ -17,7 +17,7 @@ pnpm check        # 型検査・lint・整形チェック・テストをまと�
 ```
 
 VS Code で本リポジトリを開き、F5（Run Extension）で拡張を起動すると、`samples/` が開いた状態の開発用ウィンドウが立ち上がる。
-`samples/hello.tkui.json` を開くとデザイナーが表示される。
+`samples/hello.tkui.json` を開くとデザイナーが表示される。詳しくは [docs/development.md](docs/development.md)。
 
 ## 構成
 

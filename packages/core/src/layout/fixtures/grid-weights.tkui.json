@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "root",
+    "class": "tk.Tk",
+    "window": { "geometry": "517x333" },
+    "layout": {
+      "manager": "grid",
+      "columns": { "0": { "weight": 1 }, "1": { "weight": 3, "minsize": 50 }, "3": { "pad": 10 } },
+      "rows": { "1": { "weight": 2 }, "2": { "weight": 1 } }
+    },
+    "children": [
+      {
+        "id": "title",
+        "class": "ttk.Label",
+        "options": { "text": "A wide spanning title label" },
+        "placement": { "row": 0, "column": 0, "columnspan": 3, "sticky": "ew" }
+      },
+      {
+        "id": "name",
+        "class": "ttk.Label",
+        "options": { "text": "Name:" },
+        "placement": { "row": 1, "column": 0, "sticky": "ne", "padx": [8, 4] }
+      },
+      {
+        "id": "entry",
+        "class": "ttk.Entry",
+        "placement": { "row": 1, "column": 1, "sticky": "nsew", "ipadx": 2 }
+      },
+      {
+        "id": "side",
+        "class": "tk.Frame",
+        "options": { "width": 30, "height": 90 },
+        "placement": { "row": 1, "column": 3, "rowspan": 2, "sticky": "ns" }
+      },
+      {
+        "id": "ok",
+        "class": "ttk.Button",
+        "options": { "text": "OK" },
+        "placement": { "row": 2, "column": 1, "sticky": "s", "pady": 5 }
+      },
+      {
+        "id": "cancel",
+        "class": "ttk.Button",
+        "options": { "text": "Cancel" },
+        "placement": { "row": 2, "column": 2 }
+      },
+      {
+        "id": "auto_row",
+        "class": "ttk.Label",
+        "options": { "text": "auto row" },
+        "placement": { "column": 2 }
+      }
+    ]
+  }
+}

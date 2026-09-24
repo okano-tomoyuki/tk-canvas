@@ -1,0 +1,175 @@
+{
+  "tkVersion": "8.6.18",
+  "windowingSystem": "win32",
+  "widgets": {
+    "root": {
+      "requested": [
+        208,
+        165
+      ],
+      "rect": [
+        0,
+        0,
+        480,
+        320
+      ],
+      "mapped": true
+    },
+    "toolbar": {
+      "requested": [
+        162,
+        31
+      ],
+      "rect": [
+        0,
+        0,
+        480,
+        31
+      ],
+      "mapped": true
+    },
+    "new_button": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        3,
+        3,
+        76,
+        25
+      ],
+      "mapped": true
+    },
+    "open_button": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        81,
+        3,
+        76,
+        25
+      ],
+      "mapped": true
+    },
+    "form": {
+      "requested": [
+        188,
+        54
+      ],
+      "rect": [
+        10,
+        41,
+        460,
+        209
+      ],
+      "mapped": true
+    },
+    "label1": {
+      "requested": [
+        29,
+        19
+      ],
+      "rect": [
+        18,
+        48,
+        29,
+        19
+      ],
+      "mapped": true
+    },
+    "entry1": {
+      "requested": [
+        126,
+        21
+      ],
+      "rect": [
+        64,
+        47,
+        398,
+        21
+      ],
+      "mapped": true
+    },
+    "label2": {
+      "requested": [
+        46,
+        19
+      ],
+      "rect": [
+        18,
+        69,
+        46,
+        19
+      ],
+      "mapped": true
+    },
+    "entry2": {
+      "requested": [
+        126,
+        21
+      ],
+      "rect": [
+        64,
+        68,
+        398,
+        21
+      ],
+      "mapped": true
+    },
+    "canvas_area": {
+      "requested": [
+        200,
+        60
+      ],
+      "rect": [
+        0,
+        260,
+        480,
+        60
+      ],
+      "mapped": true
+    },
+    "placed1": {
+      "requested": [
+        39,
+        19
+      ],
+      "rect": [
+        221,
+        281,
+        39,
+        19
+      ],
+      "mapped": true
+    },
+    "placed2": {
+      "requested": [
+        10,
+        10
+      ],
+      "rect": [
+        5,
+        265,
+        120,
+        7
+      ],
+      "mapped": true
+    },
+    "placed3": {
+      "requested": [
+        15,
+        19
+      ],
+      "rect": [
+        462,
+        301,
+        15,
+        19
+      ],
+      "mapped": true
+    }
+  }
+}

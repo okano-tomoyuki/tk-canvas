@@ -1,0 +1,110 @@
+{
+  "tkVersion": "8.6.18",
+  "windowingSystem": "win32",
+  "widgets": {
+    "root": {
+      "requested": [
+        296,
+        128
+      ],
+      "rect": [
+        0,
+        0,
+        517,
+        333
+      ],
+      "mapped": true
+    },
+    "title": {
+      "requested": [
+        143,
+        19
+      ],
+      "rect": [
+        0,
+        0,
+        477,
+        19
+      ],
+      "mapped": true
+    },
+    "name": {
+      "requested": [
+        38,
+        19
+      ],
+      "rect": [
+        63,
+        19,
+        38,
+        19
+      ],
+      "mapped": true
+    },
+    "entry": {
+      "requested": [
+        126,
+        21
+      ],
+      "rect": [
+        105,
+        19,
+        296,
+        179
+      ],
+      "mapped": true
+    },
+    "side": {
+      "requested": [
+        30,
+        90
+      ],
+      "rect": [
+        482,
+        19,
+        30,
+        295
+      ],
+      "mapped": true
+    },
+    "ok": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        215,
+        284,
+        76,
+        25
+      ],
+      "mapped": true
+    },
+    "cancel": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        401,
+        243,
+        76,
+        25
+      ],
+      "mapped": true
+    },
+    "auto_row": {
+      "requested": [
+        51,
+        19
+      ],
+      "rect": [
+        413,
+        314,
+        51,
+        19
+      ],
+      "mapped": true
+    }
+  }
+}

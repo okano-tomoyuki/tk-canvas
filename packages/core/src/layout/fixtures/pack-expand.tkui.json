@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "root",
+    "class": "tk.Tk",
+    "window": { "geometry": "503x301" },
+    "layout": { "manager": "pack" },
+    "children": [
+      {
+        "id": "a",
+        "class": "tk.Frame",
+        "options": { "width": 40, "height": 30, "background": "red" },
+        "placement": { "side": "left", "expand": true }
+      },
+      {
+        "id": "b",
+        "class": "tk.Frame",
+        "options": { "width": 60, "height": 20, "background": "green" },
+        "placement": { "side": "top", "expand": true, "fill": "both" }
+      },
+      {
+        "id": "c",
+        "class": "tk.Frame",
+        "options": { "width": 25, "height": 45, "background": "blue" },
+        "placement": { "side": "left", "expand": true, "fill": "x", "anchor": "nw" }
+      },
+      {
+        "id": "d",
+        "class": "tk.Frame",
+        "options": { "width": 33, "height": 17, "background": "gray" },
+        "placement": { "side": "right", "expand": true, "anchor": "se", "padx": 3 }
+      },
+      {
+        "id": "e",
+        "class": "tk.Frame",
+        "options": { "width": 70, "height": 11, "background": "black" },
+        "placement": { "side": "bottom", "expand": true, "fill": "y" }
+      }
+    ]
+  }
+}

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "pnpm -r --filter=@tk-designer/webview --filter=tk-designer --filter=@tk-designer/cli run build",
-    "typecheck": "pnpm -r run typecheck",
+    "typecheck": "pnpm -r run typecheck && tsc -p tools",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter tk-designer check:schema && pnpm test",
     "generate:schema": "pnpm --filter tk-designer generate:schema",
-    "catalog:extract": "tclsh tools/catalog/extract.tcl packages/core/src/catalog/tk-raw.json"
+    "catalog:extract": "tclsh tools/catalog/extract.tcl packages/core/src/catalog/tk-raw.json",
+    "layout:record": "node tools/layout/record.mts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

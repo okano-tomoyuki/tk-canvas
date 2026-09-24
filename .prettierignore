@@ -4,3 +4,4 @@ pnpm-lock.yaml
 docs/
 packages/extension/schema/
 packages/core/src/catalog/tk-raw.json
+packages/core/src/layout/fixtures/*.tk.json

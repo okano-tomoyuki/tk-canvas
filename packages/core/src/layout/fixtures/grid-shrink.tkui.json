@@ -1,0 +1,50 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "root",
+    "class": "tk.Tk",
+    "window": { "geometry": "150x80" },
+    "layout": {
+      "manager": "grid",
+      "columns": {
+        "0": { "weight": 1, "minsize": 20 },
+        "1": { "weight": 2 },
+        "2": { "uniform": "u" },
+        "3": { "uniform": "u", "weight": 2 }
+      },
+      "rows": { "0": { "weight": 1 } }
+    },
+    "children": [
+      {
+        "id": "a",
+        "class": "tk.Frame",
+        "options": { "width": 80, "height": 40 },
+        "placement": { "row": 0, "column": 0, "sticky": "nsew" }
+      },
+      {
+        "id": "b",
+        "class": "tk.Frame",
+        "options": { "width": 70, "height": 50 },
+        "placement": { "row": 0, "column": 1, "sticky": "nsew" }
+      },
+      {
+        "id": "c",
+        "class": "tk.Frame",
+        "options": { "width": 20, "height": 30 },
+        "placement": { "row": 0, "column": 2, "sticky": "nsew" }
+      },
+      {
+        "id": "d",
+        "class": "tk.Frame",
+        "options": { "width": 10, "height": 30 },
+        "placement": { "row": 0, "column": 3, "sticky": "nsew" }
+      },
+      {
+        "id": "e",
+        "class": "tk.Frame",
+        "options": { "width": 90, "height": 20 },
+        "placement": { "row": 1, "column": 1, "columnspan": 3, "sticky": "ew" }
+      }
+    ]
+  }
+}

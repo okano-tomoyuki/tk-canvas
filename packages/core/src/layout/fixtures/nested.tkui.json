@@ -1,0 +1,90 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "root",
+    "class": "tk.Tk",
+    "window": { "geometry": "480x320" },
+    "layout": { "manager": "pack" },
+    "children": [
+      {
+        "id": "toolbar",
+        "class": "tk.Frame",
+        "options": { "borderwidth": 3, "relief": "raised" },
+        "layout": { "manager": "pack" },
+        "placement": { "side": "top", "fill": "x" },
+        "children": [
+          {
+            "id": "new_button",
+            "class": "ttk.Button",
+            "options": { "text": "New" },
+            "placement": { "side": "left" }
+          },
+          {
+            "id": "open_button",
+            "class": "ttk.Button",
+            "options": { "text": "Open..." },
+            "placement": { "side": "left", "padx": 2 }
+          }
+        ]
+      },
+      {
+        "id": "form",
+        "class": "tk.Frame",
+        "options": { "borderwidth": 2, "relief": "groove", "padx": 6, "pady": 4 },
+        "layout": { "manager": "grid", "columns": { "1": { "weight": 1 } } },
+        "placement": { "side": "top", "fill": "both", "expand": true, "padx": 10, "pady": 10 },
+        "children": [
+          {
+            "id": "label1",
+            "class": "ttk.Label",
+            "options": { "text": "First:" },
+            "placement": { "row": 0, "column": 0, "sticky": "w" }
+          },
+          {
+            "id": "entry1",
+            "class": "ttk.Entry",
+            "placement": { "row": 0, "column": 1, "sticky": "ew" }
+          },
+          {
+            "id": "label2",
+            "class": "ttk.Label",
+            "options": { "text": "Second:" },
+            "placement": { "row": 1, "column": 0, "sticky": "w" }
+          },
+          {
+            "id": "entry2",
+            "class": "ttk.Entry",
+            "placement": { "row": 1, "column": 1, "sticky": "ew" }
+          }
+        ]
+      },
+      {
+        "id": "canvas_area",
+        "class": "tk.Frame",
+        "options": { "width": 200, "height": 60 },
+        "layout": { "manager": "place" },
+        "placement": { "side": "bottom", "fill": "x" },
+        "children": [
+          {
+            "id": "placed1",
+            "class": "ttk.Label",
+            "options": { "text": "placed" },
+            "placement": { "relx": 0.5, "rely": 0.5, "anchor": "center" }
+          },
+          {
+            "id": "placed2",
+            "class": "tk.Frame",
+            "options": { "width": 10, "height": 10 },
+            "placement": { "x": 5, "y": 5, "relwidth": 0.25, "height": 7 }
+          },
+          {
+            "id": "placed3",
+            "class": "ttk.Label",
+            "options": { "text": "se" },
+            "placement": { "relx": 1, "rely": 1, "x": -3, "anchor": "se" }
+          }
+        ]
+      }
+    ]
+  }
+}

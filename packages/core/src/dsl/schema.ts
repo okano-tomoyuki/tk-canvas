@@ -46,7 +46,7 @@ export const HandlerRef = z.strictObject({ handler: Identifier }).meta({
   description: 'イベントハンドラ（メソッド名）への参照',
 });
 
-type LiteralValue = string | number | boolean | readonly LiteralValue[];
+export type LiteralValue = string | number | boolean | readonly LiteralValue[];
 
 /** リテラル値。配列は Tcl のリストに対応し、入れ子にできる（例: font の ["Arial", 12, "bold"]） */
 export const LiteralValue: z.ZodType<LiteralValue> = z
@@ -247,3 +247,9 @@ export type OptionValue = z.infer<typeof OptionValue>;
 export type VariableRef = z.infer<typeof VariableRef>;
 export type HandlerRef = z.infer<typeof HandlerRef>;
 export type WindowSettings = z.infer<typeof WindowSettings>;
+export type Anchor = z.infer<typeof Anchor>;
+export type PackPlacement = z.infer<typeof PackPlacement>;
+export type GridPlacement = z.infer<typeof GridPlacement>;
+export type PlacePlacement = z.infer<typeof PlacePlacement>;
+export type NotebookTabPlacement = z.infer<typeof NotebookTabPlacement>;
+export type PanePlacement = z.infer<typeof PanePlacement>;

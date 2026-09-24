@@ -1,0 +1,84 @@
+{
+  "tkVersion": "8.6.18",
+  "windowingSystem": "win32",
+  "widgets": {
+    "root": {
+      "requested": [
+        222,
+        81
+      ],
+      "rect": [
+        0,
+        0,
+        420,
+        260
+      ],
+      "mapped": true
+    },
+    "top1": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        4,
+        3,
+        404,
+        25
+      ],
+      "mapped": true
+    },
+    "left1": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        0,
+        31,
+        86,
+        229
+      ],
+      "mapped": true
+    },
+    "right1": {
+      "requested": [
+        60,
+        19
+      ],
+      "rect": [
+        360,
+        234,
+        60,
+        19
+      ],
+      "mapped": true
+    },
+    "bottom1": {
+      "requested": [
+        76,
+        25
+      ],
+      "rect": [
+        284,
+        229,
+        76,
+        31
+      ],
+      "mapped": true
+    },
+    "center1": {
+      "requested": [
+        38,
+        19
+      ],
+      "rect": [
+        86,
+        31,
+        274,
+        198
+      ],
+      "mapped": true
+    }
+  }
+}

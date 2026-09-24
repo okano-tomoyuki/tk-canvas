@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "root",
+    "class": "tk.Tk",
+    "window": { "geometry": "420x260" },
+    "layout": { "manager": "pack" },
+    "children": [
+      {
+        "id": "top1",
+        "class": "ttk.Button",
+        "options": { "text": "Top" },
+        "placement": { "side": "top", "fill": "x", "padx": [4, 12], "pady": 3 }
+      },
+      {
+        "id": "left1",
+        "class": "ttk.Button",
+        "options": { "text": "Left" },
+        "placement": { "side": "left", "fill": "y", "ipadx": 5 }
+      },
+      {
+        "id": "right1",
+        "class": "ttk.Label",
+        "options": { "text": "Right label" },
+        "placement": { "side": "right", "anchor": "s", "pady": [0, 7] }
+      },
+      {
+        "id": "bottom1",
+        "class": "ttk.Button",
+        "options": { "text": "Bottom" },
+        "placement": { "side": "bottom", "anchor": "e", "ipady": 3 }
+      },
+      {
+        "id": "center1",
+        "class": "ttk.Label",
+        "options": { "text": "Center" },
+        "placement": { "expand": true, "fill": "both" }
+      }
+    ]
+  }
+}

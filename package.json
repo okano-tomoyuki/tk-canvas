@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter tk-designer check:schema && pnpm test",
-    "generate:schema": "pnpm --filter tk-designer generate:schema"
+    "generate:schema": "pnpm --filter tk-designer generate:schema",
+    "catalog:extract": "tclsh tools/catalog/extract.tcl packages/core/src/catalog/tk-raw.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

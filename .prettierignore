@@ -3,3 +3,4 @@ coverage/
 pnpm-lock.yaml
 docs/
 packages/extension/schema/
+packages/core/src/catalog/tk-raw.json

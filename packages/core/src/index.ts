@@ -13,4 +13,15 @@ export { parseDocument, type ParseResult } from './dsl/parse.ts';
 export { validateDocument } from './dsl/validate.ts';
 export { serializeDocument } from './dsl/serialize.ts';
 export { documentJsonSchema } from './dsl/jsonSchema.ts';
-export { containerKindOf, type ContainerKind, type HandlerSignature } from './dsl/interimRules.ts';
+export { containerKindOf, type ContainerKind } from './dsl/placement.ts';
+export type { HandlerSignature } from './dsl/signature.ts';
+
+export { findOption, getWidgetCatalog } from './catalog/catalog.ts';
+export type {
+  ChildrenKind,
+  OptionInfo,
+  OptionType,
+  WidgetCatalog,
+  WidgetCategory,
+  WidgetClassInfo,
+} from './catalog/types.ts';

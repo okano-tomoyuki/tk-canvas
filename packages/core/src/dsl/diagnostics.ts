@@ -11,6 +11,11 @@ export type DiagnosticCode =
   // 名前
   | 'invalid-identifier'
   | 'duplicate-name'
+  // カタログ
+  | 'unknown-class'
+  | 'unknown-option'
+  | 'option-alias'
+  | 'invalid-option-value'
   // 参照
   | 'unknown-variable'
   | 'variable-type-mismatch'
@@ -20,6 +25,7 @@ export type DiagnosticCode =
   // 構造上の制約
   | 'invalid-child-class'
   | 'layout-not-allowed'
+  | 'children-not-allowed'
   | 'missing-layout'
   | 'placement-mismatch'
   // 警告

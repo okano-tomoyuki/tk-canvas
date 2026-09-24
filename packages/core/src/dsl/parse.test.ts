@@ -120,12 +120,93 @@ describe('意味の検証', () => {
 
   it('参照を置けないオプションと、参照が必須のオプション', () => {
     const text = doc({
-      options: { text: { var: 'x' }, command: 'on_click', textvariable: 'name' },
+      layout: { manager: 'pack' },
+      children: [
+        {
+          id: 'a',
+          class: 'ttk.Button',
+          options: { text: { var: 'x' }, command: 'on_click', textvariable: 'name' },
+        },
+      ],
     });
     expect(codes(text)).toEqual([
       'misplaced-reference',
       'reference-required',
       'reference-required',
+    ]);
+  });
+
+  it('シグネチャ未対応のコールバックにはハンドラ参照を置けない', () => {
+    const text = doc({
+      layout: { manager: 'pack' },
+      children: [
+        { id: 'a', class: 'tk.Text', options: { yscrollcommand: { handler: 'on_scroll' } } },
+      ],
+    });
+    const diagnostics = parseDocument(text).diagnostics;
+    expect(diagnostics.map((d) => d.code)).toEqual(['misplaced-reference']);
+    expect(diagnostics[0]?.message).toContain('まだ対応していません');
+  });
+});
+
+describe('カタログによる検証', () => {
+  function widget(node: object): string {
+    return doc({ layout: { manager: 'pack' }, children: [{ id: 'w', ...node }] });
+  }
+
+  it('カタログにないクラス', () => {
+    expect(codes(widget({ class: 'ttk.Buton' }))).toEqual(['unknown-class']);
+  });
+
+  it('存在しないオプションと別名', () => {
+    const text = widget({ class: 'tk.Button', options: { txt: 'OK', bd: 2 } });
+    expect(codes(text)).toEqual(['unknown-option', 'option-alias']);
+  });
+
+  it.each([
+    [{ relief: 'raised' }, []],
+    [{ relief: 'bumpy' }, ['invalid-option-value']],
+    [{ width: 10 }, []],
+    [{ width: 1.5 }, ['invalid-option-value']],
+    [{ borderwidth: '2p' }, []],
+    [{ borderwidth: 'thick' }, ['invalid-option-value']],
+    [{ font: ['Arial', 12, 'bold'] }, []],
+    [{ background: 123 }, ['invalid-option-value']],
+    [{ text: 42 }, []],
+  ])('tk.Button %o', (options, expected) => {
+    expect(codes(widget({ class: 'tk.Button', options }))).toEqual(expected);
+  });
+
+  it('変数型はクラスごとに決まる（ttk.Checkbutton の variable は BooleanVar 可、ttk.Scale は不可）', () => {
+    const text = doc(
+      {
+        layout: { manager: 'pack' },
+        children: [
+          { id: 'check', class: 'ttk.Checkbutton', options: { variable: { var: 'flag' } } },
+          { id: 'scale', class: 'ttk.Scale', options: { variable: { var: 'flag' } } },
+        ],
+      },
+      { flag: { type: 'BooleanVar' } },
+    );
+    expect(parseDocument(text).diagnostics).toMatchObject([
+      {
+        code: 'variable-type-mismatch',
+        path: ['root', 'children', 1, 'options', 'variable', 'var'],
+      },
+    ]);
+  });
+
+  it('子を持てないクラス', () => {
+    const text = widget({
+      class: 'ttk.Button',
+      children: [{ id: 'inner', class: 'ttk.Label' }],
+    });
+    expect(codes(text)).toEqual(['children-not-allowed']);
+  });
+
+  it('子を持てないクラスに layout は書けない', () => {
+    expect(codes(widget({ class: 'ttk.Label', layout: { manager: 'grid' } }))).toEqual([
+      'layout-not-allowed',
     ]);
   });
 

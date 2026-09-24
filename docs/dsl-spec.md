@@ -137,16 +137,22 @@
 | 変数参照 | `{ "var": "変数名" }` | `{ "var": "user_name" }` |
 | ハンドラ参照 | `{ "handler": "メソッド名" }` | `{ "handler": "on_submit" }` |
 
-参照を書けるオプションは決まっている（ウィジェットカタログの導入までは次の暫定規則）。
+どのクラスにどのオプションがあり、どの値を書けるかは**ウィジェットカタログ**（[catalog.md](catalog.md)）で決まる。
 
-| オプション | 書けるもの |
+- カタログにないオプションはエラー。別名（`bd`、`bg` 等）もエラーとし、正式名（`borderwidth`、`background`）で書く。
+- 値はオプションの型に合っていなければならない。
+
+| 型 | 書ける値 |
 |---|---|
-| `textvariable`、`listvariable` | StringVar の変数参照のみ |
-| `variable` | 変数参照のみ（型の制限はカタログ導入時に追加する） |
-| `command` | ハンドラ参照のみ |
-| 上記以外 | リテラルのみ |
-
-どのオプションがどのウィジェットに存在するか、値の型は何かといった検証は、ウィジェットカタログ（ADR 0007）の導入時に追加する。
+| variable（`textvariable`、`variable` 等） | 変数参照のみ。受け付ける変数型はクラスごとに決まる（例: `textvariable` は StringVar、ttk.Checkbutton の `variable` は BooleanVar / IntVar / StringVar） |
+| callback（`command` 等） | ハンドラ参照のみ。シグネチャが定義されていないもの（`xscrollcommand`、`validatecommand` 等）には、まだ参照を書けない |
+| integer / number / boolean | 整数 / 数値 / 真偽 |
+| distance | 数値（ピクセル）、または `"2c"` `"10p"` のような単位つき文字列 |
+| enum（`relief`、`anchor`、`orient` 等） | 候補のいずれかの文字列 |
+| list（Combobox の `values` 等） | 配列、または空白区切りの文字列 |
+| font | `"Arial 12 bold"` のような文字列、または `["Arial", 12, "bold"]` のような配列 |
+| color / image / bitmap / cursor / style / window | 文字列 |
+| string | 任意のリテラル |
 
 ## 7. 配置
 
@@ -162,6 +168,9 @@
 
 Tk の制約（同じ親の中で pack と grid を混在できない）を、manager を親に1つだけ持たせることで表している。
 
+子を持てるかどうか、子をどう置くかはクラスで決まる（カタログの `children`）。
+子を持てるクラスは、ウィンドウ（Tk, Toplevel）と Frame / Labelframe（classic・ttk）、および下表のクラス。
+
 **クラスで置き方が決まるウィジェット**（`layout` を書けない）:
 
 | クラス | 子の `placement` の意味 |
@@ -169,7 +178,8 @@ Tk の制約（同じ親の中で pack と grid を混在できない）を、ma
 | `ttk.Notebook` | タブのオプション（`notebook.add(child, ...)`） |
 | `ttk.PanedWindow` | ペインのオプション（`panedwindow.add(child, ...)`） |
 
-子を持つのに `layout` がない（かつ上表のクラスでもない）場合はエラー。
+- 子を持てないクラスに `children` または `layout` を書くとエラー。
+- layout で子を並べるクラスが子を持つのに `layout` がない場合はエラー。
 
 ### 7.2 placement（子が親の中でどこに置かれるか）
 
@@ -246,13 +256,18 @@ Tk の制約（同じ親の中で pack と grid を混在できない）を、ma
 | 構造 | `schema` | エラー | 形・型・列挙値の誤り |
 | 意味 | `invalid-identifier` | エラー | §9 の条件を満たさない名前 |
 | | `duplicate-name` | エラー | 名前の重複 |
+| | `unknown-class` | エラー | カタログにないクラス |
+| | `unknown-option` | エラー | そのクラスにないオプション |
+| | `option-alias` | エラー | オプションを別名で書いた |
+| | `invalid-option-value` | エラー | オプションの型に合わない値 |
 | | `unknown-variable` | エラー | 未定義の変数への参照 |
 | | `variable-type-mismatch` | エラー | オプションが受け付けない型の変数 |
 | | `misplaced-reference` | エラー | 参照を書けないオプションに参照を書いた |
 | | `reference-required` | エラー | 参照が必須のオプションにリテラルを書いた |
 | | `handler-signature-conflict` | エラー | 同じハンドラを異なるシグネチャで使った |
 | | `invalid-child-class` | エラー | Tk / Toplevel をルート以外に置いた |
-| | `layout-not-allowed` | エラー | クラスで置き方が決まるウィジェットに layout を書いた |
+| | `layout-not-allowed` | エラー | 子を持てない、または置き方がクラスで決まるウィジェットに layout を書いた |
+| | `children-not-allowed` | エラー | 子を持てないウィジェットに children を書いた |
 | | `missing-layout` | エラー | 子を持つのに layout がない |
 | | `placement-mismatch` | エラー | 親の置き方に合わない placement |
 | | `unused-variable` | 警告 | どこからも参照されていない変数 |

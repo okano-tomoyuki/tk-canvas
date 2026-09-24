@@ -1,0 +1,45 @@
+{
+  "name": "@tk-designer/extension",
+  "displayName": "Tk Designer",
+  "description": "GUI designer for Tcl/Tk (cpp_tk / tkinter)",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "okano-tomoyuki",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Visual Designers"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "tkDesigner.designer",
+        "displayName": "Tk Designer",
+        "selector": [
+          {
+            "filenamePattern": "*.tkui.json"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --sourcemap --outfile=dist/extension.cjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "package": "vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "@tk-designer/codegen": "workspace:*",
+    "@tk-designer/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/vscode": "~1.100.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2"
+  }
+}

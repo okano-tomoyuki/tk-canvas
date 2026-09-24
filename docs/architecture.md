@@ -80,7 +80,7 @@ core と codegen はファイル入出力を持たないので、入出力が文
 
 | # | 論点 | メモ |
 |---|---|---|
-| A1 | **キャンバス上のレイアウト計算** | pack / grid をキャンバス上で再現するには、Tk のジオメトリマネージャの挙動を TS で計算する必要がある。案a: pack / grid のアルゴリズムを core に実装する（ウィジェットの要求サイズは推定値）。案b: CSS の Grid / Flexbox で近似する。案c: 実際の Tk で配置を計算し、座標を受け取る（Tk 環境が必要になる）。デザイナーの中核なので、別途 ADR で決める。 |
+| A1 | ~~キャンバス上のレイアウト計算~~ | **決定**: Tk の pack / grid のアルゴリズムを TS で core に実装する（[ADR 0008](adr/0008-layout-engine-in-core.md)）。 |
 | A2 | DSL の型と JSON Schema の単一化 | 案: TS の型を正にして JSON Schema を生成する（Zod / TypeBox 等）か、JSON Schema を正にして型を生成するか。dsl-spec.md の作成時に決める。 |
 | A3 | Webview の UI 部品 | VS Code 公式の Webview UI Toolkit は開発終了済み。VS Code のテーマ変数（CSS 変数）を使った自前部品か、`@vscode-elements` 等のライブラリか。 |
 | A4 | 実機プレビュー | 生成した Tcl / Python を wish / python で実行して本物の表示を確認する機能。A1 の案c とも関係する。 |

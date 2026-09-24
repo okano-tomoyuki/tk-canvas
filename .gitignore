@@ -1,5 +1,7 @@
-out
-dist
-node_modules
+node_modules/
+dist/
+out/
+coverage/
 .vscode-test/
 *.vsix
+*.tsbuildinfo

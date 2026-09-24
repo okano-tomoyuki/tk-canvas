@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "root": {
+    "id": "main_window",
+    "class": "Tk",
+    "window": { "title": "Hello", "geometry": "320x120" },
+    "layout": { "manager": "pack" },
+    "children": [
+      {
+        "id": "greeting_label",
+        "class": "ttk.Label",
+        "options": { "text": "Hello, Tk!" },
+        "placement": { "pady": 16 }
+      }
+    ]
+  }
+}

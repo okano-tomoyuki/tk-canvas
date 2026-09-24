@@ -33,5 +33,6 @@ VS Code に依存しないコア（DSL・検証・コード生成）を、拡張
 
 ## 影響
 
+- TypeScript は 6.0 系に固定する。7.0 系（Go 実装）は typescript-eslint が未対応のため（2026-09 時点）。対応後に更新を検討する。
 - 開発者は pnpm のインストールが必要（Node.js 同梱の corepack で有効化できる）。
 - パッケージ構成は [architecture.md](../architecture.md) を参照。

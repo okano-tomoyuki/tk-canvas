@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidIdentifier } from './identifier.js';
+import { isValidIdentifier } from './identifier.ts';
 
 describe('isValidIdentifier', () => {
   it.each(['name_entry', 'submitButton', '_private', 'x1'])('%s は有効', (id) => {

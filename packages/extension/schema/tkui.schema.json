@@ -1,0 +1,813 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "formatVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "variables": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "StringVar"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "IntVar"
+              },
+              "value": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "DoubleVar"
+              },
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "BooleanVar"
+              },
+              "value": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "root": {
+      "$ref": "#/definitions/RootNode"
+    }
+  },
+  "required": [
+    "formatVersion",
+    "root"
+  ],
+  "additionalProperties": false,
+  "title": "tk-designer UI definition (*.tkui.json)",
+  "definitions": {
+    "RootNode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "tk.Tk",
+            "tk.Toplevel"
+          ]
+        },
+        "window": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "geometry": {
+              "type": "string",
+              "pattern": "^(?=.)(\\d+x\\d+)?([+-]\\d+[+-]\\d+)?$"
+            },
+            "resizable": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "additionalItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minsize": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "additionalItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "maxsize": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "additionalItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "options": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*$"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/LiteralValue"
+              },
+              {
+                "$ref": "#/definitions/VariableRef"
+              },
+              {
+                "$ref": "#/definitions/HandlerRef"
+              }
+            ]
+          }
+        },
+        "layout": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Layout"
+            }
+          ]
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "string",
+                "pattern": "^<.+>$"
+              },
+              "handler": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              }
+            },
+            "required": [
+              "sequence",
+              "handler"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WidgetNode"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "class"
+      ],
+      "additionalProperties": false,
+      "description": "ウィンドウ（生成されるクラス1つに対応する）"
+    },
+    "LiteralValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/LiteralValue"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "VariableRef": {
+      "type": "object",
+      "properties": {
+        "var": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        }
+      },
+      "required": [
+        "var"
+      ],
+      "additionalProperties": false,
+      "description": "variables に定義した変数への参照"
+    },
+    "HandlerRef": {
+      "type": "object",
+      "properties": {
+        "handler": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        }
+      },
+      "required": [
+        "handler"
+      ],
+      "additionalProperties": false,
+      "description": "イベントハンドラ（メソッド名）への参照"
+    },
+    "Layout": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "manager": {
+              "type": "string",
+              "const": "pack"
+            },
+            "propagate": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "manager"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "manager": {
+              "type": "string",
+              "const": "grid"
+            },
+            "propagate": {
+              "type": "boolean"
+            },
+            "columns": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "minsize": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "pad": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "uniform": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "rows": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "minsize": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "pad": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "uniform": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "manager"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "manager": {
+              "type": "string",
+              "const": "place"
+            }
+          },
+          "required": [
+            "manager"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "このコンテナが子をどう並べるか"
+    },
+    "WidgetNode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "class": {
+          "type": "string",
+          "pattern": "^(tk|ttk)\\.[A-Z][A-Za-z]*$"
+        },
+        "options": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*$"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/LiteralValue"
+              },
+              {
+                "$ref": "#/definitions/VariableRef"
+              },
+              {
+                "$ref": "#/definitions/HandlerRef"
+              }
+            ]
+          }
+        },
+        "layout": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Layout"
+            }
+          ]
+        },
+        "placement": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Placement"
+            }
+          ]
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "string",
+                "pattern": "^<.+>$"
+              },
+              "handler": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              }
+            },
+            "required": [
+              "sequence",
+              "handler"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WidgetNode"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "class"
+      ],
+      "additionalProperties": false,
+      "description": "ウィジェット"
+    },
+    "Placement": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "side": {
+              "type": "string",
+              "enum": [
+                "top",
+                "bottom",
+                "left",
+                "right"
+              ]
+            },
+            "fill": {
+              "type": "string",
+              "enum": [
+                "none",
+                "x",
+                "y",
+                "both"
+              ]
+            },
+            "expand": {
+              "type": "boolean"
+            },
+            "anchor": {
+              "type": "string",
+              "enum": [
+                "n",
+                "ne",
+                "e",
+                "se",
+                "s",
+                "sw",
+                "w",
+                "nw",
+                "center"
+              ]
+            },
+            "padx": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "pady": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "ipadx": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ipady": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "column": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "rowspan": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "columnspan": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "sticky": {
+              "type": "string",
+              "pattern": "^(?!.*(.).*\\1)[nsew]*$"
+            },
+            "padx": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "pady": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "ipadx": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ipady": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "relx": {
+              "type": "number"
+            },
+            "rely": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0
+            },
+            "height": {
+              "type": "number",
+              "minimum": 0
+            },
+            "relwidth": {
+              "type": "number",
+              "minimum": 0
+            },
+            "relheight": {
+              "type": "number",
+              "minimum": 0
+            },
+            "anchor": {
+              "type": "string",
+              "enum": [
+                "n",
+                "ne",
+                "e",
+                "se",
+                "s",
+                "sw",
+                "w",
+                "nw",
+                "center"
+              ]
+            },
+            "bordermode": {
+              "type": "string",
+              "enum": [
+                "inside",
+                "outside",
+                "ignore"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "underline": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "sticky": {
+              "type": "string",
+              "pattern": "^(?!.*(.).*\\1)[nsew]*$"
+            },
+            "padding": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 4,
+                  "maxItems": 4
+                }
+              ]
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "normal",
+                "disabled",
+                "hidden"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "description": "この子が親の中でどこに置かれるか（形式は親で決まる）"
+    }
+  }
+}

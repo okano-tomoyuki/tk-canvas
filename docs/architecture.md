@@ -81,7 +81,7 @@ core と codegen はファイル入出力を持たないので、入出力が文
 | # | 論点 | メモ |
 |---|---|---|
 | A1 | ~~キャンバス上のレイアウト計算~~ | **決定**: Tk の pack / grid のアルゴリズムを TS で core に実装する（[ADR 0008](adr/0008-layout-engine-in-core.md)）。 |
-| A2 | DSL の型と JSON Schema の単一化 | 案: TS の型を正にして JSON Schema を生成する（Zod / TypeBox 等）か、JSON Schema を正にして型を生成するか。dsl-spec.md の作成時に決める。 |
+| A2 | ~~DSL の型と JSON Schema の単一化~~ | **決定**: Zod 4 でスキーマを core に定義し、型と JSON Schema を導出する（[ADR 0009](adr/0009-dsl-schema-in-zod.md)）。 |
 | A3 | Webview の UI 部品 | VS Code 公式の Webview UI Toolkit は開発終了済み。VS Code のテーマ変数（CSS 変数）を使った自前部品か、`@vscode-elements` 等のライブラリか。 |
 | A4 | 実機プレビュー | 生成した Tcl / Python を wish / python で実行して本物の表示を確認する機能。A1 の案c とも関係する。 |
 | A5 | ttk スタイルの扱い | ADR 0007 の影響欄を参照。 |

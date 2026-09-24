@@ -1,6 +1,7 @@
 **
 !dist/**
 !package.json
+!schema/**
 !README.md
 !LICENSE
 dist/**/*.map

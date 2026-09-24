@@ -1,6 +1,6 @@
 # DSL 設計検討メモ
 
-正式仕様（dsl-spec.md）を作る前の検討メモ。
+正式仕様（[dsl-spec.md](dsl-spec.md)）を作る前の検討メモ。**合意内容は dsl-spec.md に反映済みで、以降は dsl-spec.md を正とする。**
 ドラフト（[drafts/schema.json](drafts/schema.json) / [drafts/codegen.py](drafts/codegen.py)）のレビュー結果と、決めるべき論点を記録する。
 
 ## 1. ドラフトの評価

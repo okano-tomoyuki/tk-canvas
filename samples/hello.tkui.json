@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "root": {
     "id": "main_window",
-    "class": "Tk",
+    "class": "tk.Tk",
     "window": { "title": "Hello", "geometry": "320x120" },
     "layout": { "manager": "pack" },
     "children": [

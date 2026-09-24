@@ -9,10 +9,10 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 |---|---|---|
 | [vision.md](vision.md) | 目的・想定ユーザー・スコープ | 初版 |
 | [adr/](adr/) | 設計判断の記録（1判断1ファイル） | 随時追加 |
-| [dsl-design-notes.md](dsl-design-notes.md) | DSL 設計の検討メモ（ドラフトのレビュー・論点） | 検討中 |
+| [dsl-design-notes.md](dsl-design-notes.md) | DSL 設計の検討メモ（ドラフトのレビュー・論点） | 完了（dsl-spec.md に反映済み） |
 | [codegen-design.md](codegen-design.md) | コード生成（マーカー区間更新）の設計・生成例 | 主要論点は決定済み（M3〜M5, M7, M8, M10 は未決） |
-| dsl-spec.md | DSL 正式仕様 | 未着手（検討メモの合意後に作成） |
-| [architecture.md](architecture.md) | パッケージ構成・データフロー・技術スタック | 初版（A2〜A5 は未決） |
+| [dsl-spec.md](dsl-spec.md) | DSL 正式仕様（formatVersion 1） | 初版 |
+| [architecture.md](architecture.md) | パッケージ構成・データフロー・技術スタック | 初版（A3〜A5 は未決） |
 | [drafts/](drafts/) | DSL・コード生成の初期ドラフト（すり合わせ用の参考資料） | 参考 |
 | requirements.md | 機能要件・非機能要件 | 未着手 |
 
@@ -28,6 +28,7 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 | [0006](adr/0006-document-state-and-undo.md) | 状態管理と Undo/Redo: テキスト文書を唯一の正とし、Undo は VS Code に委ねる | 承認 |
 | [0007](adr/0007-widget-catalog-from-tk.md) | ウィジェットカタログは Tk から自動抽出し、手書きの補足情報を重ねる | 承認 |
 | [0008](adr/0008-layout-engine-in-core.md) | キャンバス上のレイアウトは Tk のアルゴリズムを TypeScript で再現して計算する | 承認 |
+| [0009](adr/0009-dsl-schema-in-zod.md) | DSL のスキーマは Zod で TS 側に定義し、型と JSON Schema を導出する | 承認 |
 
 ## 旧実装
 

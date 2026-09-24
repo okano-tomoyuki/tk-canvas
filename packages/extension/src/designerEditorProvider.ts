@@ -14,7 +14,11 @@ export class DesignerEditorProvider implements vscode.CustomTextEditorProvider {
     );
   }
 
-  private constructor(private readonly context: vscode.ExtensionContext) {}
+  private readonly context: vscode.ExtensionContext;
+
+  private constructor(context: vscode.ExtensionContext) {
+    this.context = context;
+  }
 
   resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): void {
     const webviewRoot = vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview');

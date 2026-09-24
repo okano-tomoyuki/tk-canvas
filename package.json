@@ -7,14 +7,15 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "pnpm -r --filter=@tk-designer/webview --filter=@tk-designer/extension --filter=@tk-designer/cli run build",
+    "build": "pnpm -r --filter=@tk-designer/webview --filter=tk-designer --filter=@tk-designer/cli run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter tk-designer check:schema && pnpm test",
+    "generate:schema": "pnpm --filter tk-designer generate:schema"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

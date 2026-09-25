@@ -38,8 +38,8 @@ core はどのパッケージにも依存しない。矢印の逆向き（core �
 | core | DSL の型定義、JSON Schema、検証、カタログの読み込み、ドキュメント操作コマンド（純粋関数）、決定的シリアライズ、拡張と Webview 間のメッセージ型 | Immer、スキーマ検証ライブラリ | VS Code API、DOM、Node API（fs 等） |
 | codegen | DSL → 中間表現 → 各言語のコード片、既存ファイルとのマージ（文字列入力 → 文字列出力） | core | VS Code API、ファイル入出力 |
 | cli | 引数解析、ファイル入出力、codegen の呼び出し | core、codegen、Node API | VS Code API |
-| extension | Custom Editor の提供、Webview との通信、WorkspaceEdit の適用、コード生成コマンド | core、codegen、VS Code API | React |
-| webview | デザイナー UI（キャンバス、ツリー、プロパティパネル、パレット） | core、React、Zustand | VS Code API（`acquireVsCodeApi` 経由の通信を除く）、Node API |
+| extension | Custom Editor の提供、Webview との通信、WorkspaceEdit の適用、コード生成・新しい画面の作成のコマンド | core、codegen、VS Code API | React |
+| webview | デザイナー UI（キャンバス、ツリー、プロパティパネル、パレット、コード生成の画面） | core、codegen（名前の既定値など純粋関数のみ）、React、Zustand | VS Code API（`acquireVsCodeApi` 経由の通信を除く）、Node API |
 
 **方針**: ロジックはできるだけ core / codegen に置き、extension と webview は薄く保つ。
 core と codegen はファイル入出力を持たないので、入出力が文字列だけのテストで網羅できる。

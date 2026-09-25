@@ -24,6 +24,8 @@ interface Snapshot {
 
 export interface DocumentState extends Snapshot {
   readonly status: 'loading' | 'loaded';
+  /** DSL のファイル名（コード生成のクラス名・出力先の既定値に使う） */
+  readonly fileName: string;
   /** ホストから最後に受け取った内容 */
   readonly confirmed: Snapshot & { readonly version: number };
   /** 応答待ちの編集の requestId */
@@ -33,7 +35,7 @@ export interface DocumentState extends Snapshot {
 }
 
 export interface DocumentActions {
-  readonly receiveDocument: (version: number, text: string) => void;
+  readonly receiveDocument: (version: number, text: string, fileName: string) => void;
   readonly receiveEditResult: (requestId: number, ok: boolean, error?: string) => void;
   /** コマンドを適用してホストに送る。ローカルで適用できなければ送らずに false を返す */
   readonly dispatch: (command: EditCommand) => boolean;
@@ -47,20 +49,21 @@ export function createDocumentStore(send: (message: WebviewToExtensionMessage) =
 
   return createStore<DocumentState & DocumentActions>()((set, get) => ({
     status: 'loading',
+    fileName: '',
     document: undefined,
     diagnostics: [],
     confirmed: { version: -1, document: undefined, diagnostics: [] },
     pending: [],
     lastError: undefined,
 
-    receiveDocument(version, text) {
+    receiveDocument(version, text, fileName) {
       const { document, diagnostics } = parseDocument(text);
       const confirmed = { version, document, diagnostics };
       // 応答待ちの編集がある間は、ローカルの（楽観的に反映した）表示を保つ
       set(
         get().pending.length > 0
-          ? { confirmed }
-          : { status: 'loaded', confirmed, document, diagnostics },
+          ? { confirmed, fileName }
+          : { status: 'loaded', fileName, confirmed, document, diagnostics },
       );
     },
 

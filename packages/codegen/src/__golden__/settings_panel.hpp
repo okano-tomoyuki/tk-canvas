@@ -2,13 +2,13 @@
 
 #include "cpp_tk.hpp"
 
-/** tk-designer で作成した画面（dialog.tkui.json）。マーカーで囲まれた区間は再生成で上書きされる。 */
-class Dialog : public cpp_tk::Toplevel
+/** tk-designer で作成した画面（settings_panel.tkui.json）。マーカーで囲まれた区間は再生成で上書きされる。 */
+class SettingsPanel : public cpp_tk::ttk::Labelframe
 {
 public:
-    explicit Dialog(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options = {});
-    Dialog(const Dialog&) = delete;
-    Dialog& operator=(const Dialog&) = delete;
+    explicit SettingsPanel(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options = {});
+    SettingsPanel(const SettingsPanel&) = delete;
+    SettingsPanel& operator=(const SettingsPanel&) = delete;
 
 private:
     // <tk-designer:begin id="declarations">
@@ -28,8 +28,9 @@ private:
     void tkd_apply_layout();
     void tkd_bind_events();
 
+    void on_resize(const cpp_tk::Event& event);
     void on_name_return(const cpp_tk::Event& event);
     void on_level(const double& value);
     void on_submit();
-    // <tk-designer:end id="declarations" hash="69fa850d">
+    // <tk-designer:end id="declarations" hash="697ed887">
 };

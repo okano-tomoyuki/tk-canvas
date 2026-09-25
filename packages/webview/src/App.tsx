@@ -1,14 +1,16 @@
 import { DesignCanvas } from './canvas/DesignCanvas.tsx';
+import { CodegenView } from './components/CodegenView.tsx';
 import { Inspector } from './components/inspector/Inspector.tsx';
 import { MembersPanel } from './components/MembersPanel.tsx';
 import { Palette } from './components/Palette.tsx';
 import { StatusPanel } from './components/StatusPanel.tsx';
 import { WidgetTree } from './components/WidgetTree.tsx';
-import { useDocumentStore } from './store/stores.ts';
+import { useDocumentStore, useUiStore } from './store/stores.ts';
 
 export function App() {
   const status = useDocumentStore((s) => s.status);
   const hasDocument = useDocumentStore((s) => s.document !== undefined);
+  const view = useUiStore((s) => s.view);
 
   if (status === 'loading') return <p>読み込み中…</p>;
   if (!hasDocument) {
@@ -21,6 +23,7 @@ export function App() {
       </main>
     );
   }
+  if (view === 'codegen') return <CodegenView />;
   return (
     <main className="layout">
       <div className="sidebar">

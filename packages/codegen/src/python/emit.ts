@@ -2,7 +2,7 @@
  * Python（tkinter）のコード生成（docs/codegen-design.md）。
  * 中間表現から、各マーカー区間の中身・新規ファイルの雛形・ハンドラの雛形を作る。
  */
-import type { LiteralValue, Variable } from '@tk-designer/core';
+import { ROOT_CLASSES, type LiteralValue, type Variable } from '@tk-designer/core';
 import type { GenHandler, GenModel, GenValue, GenWidget } from '../model.ts';
 import type { GeneratedCode, Region } from '../region.ts';
 
@@ -22,6 +22,11 @@ export function emitPython(model: GenModel, sourceName: string): GeneratedCode {
     regions,
     stubs: model.handlers.map((h) => ({ name: h.name, code: handlerStub(h) })),
     scaffold: (rendered) => scaffold(model, sourceName, rendered),
+    baseClass: {
+      className: model.className,
+      expected: pyClass(model.root.className),
+      known: ROOT_CLASSES.map(pyClass),
+    },
   };
 }
 
@@ -29,7 +34,6 @@ export function emitPython(model: GenModel, sourceName: string): GeneratedCode {
 
 function declarations(model: GenModel): string {
   const lines = [
-    `self.${model.root.id}: ${pyClass(model.root.className)}`,
     ...model.variables.map(([name, v]) => `self.${name}: tk.${v.type}`),
     ...model.widgets.map((w) => `self.${w.id}: ${pyClass(w.className)}`),
   ];
@@ -37,32 +41,26 @@ function declarations(model: GenModel): string {
 }
 
 function createWidgets(model: GenModel): string {
-  const root = model.root;
-  const rootArgs = model.root.className === 'tk.Toplevel' ? ['self.master'] : [];
-  const lines: string[] = [
-    `def tkd_create_widgets(self):`,
-    `${INDENT}self.${root.id} = ${pyClass(root.className)}(${[...rootArgs, ...kwargs(root.options.filter((o) => o.creationOnly))].join(', ')})`,
-    ...windowSettings(model),
-  ];
-  const rootConfig = kwargs(root.options.filter((o) => !o.creationOnly));
-  if (rootConfig.length > 0)
-    lines.push(`${INDENT}self.${root.id}.configure(${rootConfig.join(', ')})`);
+  const lines: string[] = [`def tkd_create_widgets(self):`, ...windowSettings(model)];
+  const rootConfig = kwargs(model.root.options);
+  if (rootConfig.length > 0) lines.push(`${INDENT}self.configure(${rootConfig.join(', ')})`);
 
-  if (model.variables.length > 0) lines.push('');
+  if (model.variables.length > 0 && lines.length > 1) lines.push('');
   for (const [name, variable] of model.variables)
-    lines.push(`${INDENT}${variableCreation(model, name, variable)}`);
+    lines.push(`${INDENT}${variableCreation(name, variable)}`);
 
-  if (model.widgets.length > 0) lines.push('');
+  if (model.widgets.length > 0 && lines.length > 1) lines.push('');
   for (const widget of model.widgets) {
-    const args = [`self.${widget.parentId ?? model.root.id}`, ...kwargs(widget.options)];
+    const args = [ref(model, widget.parentId), ...kwargs(widget.options)];
     lines.push(`${INDENT}self.${widget.id} = ${pyClass(widget.className)}(${args.join(', ')})`);
   }
+  if (lines.length === 1) lines.push(`${INDENT}pass`);
   return block(1, lines);
 }
 
 function windowSettings(model: GenModel): string[] {
   const w = model.window;
-  const target = `${INDENT}self.${model.root.id}`;
+  const target = `${INDENT}self`;
   return [
     ...(w.title !== undefined ? [`${target}.title(${pyString(w.title)})`] : []),
     ...(w.geometry !== undefined ? [`${target}.geometry(${pyString(w.geometry)})`] : []),
@@ -74,10 +72,15 @@ function windowSettings(model: GenModel): string[] {
   ];
 }
 
-function variableCreation(model: GenModel, name: string, variable: Variable): string {
-  const args = [`master=self.${model.root.id}`];
+function variableCreation(name: string, variable: Variable): string {
+  const args = ['master=self'];
   if (variable.value !== undefined) args.push(`value=${pyLiteral(variable.value)}`);
   return `self.${name} = tk.${variable.type}(${args.join(', ')})`;
+}
+
+/** ウィジェットを指す式。ルートは生成クラス自身（self）*/
+function ref(model: GenModel, id: string | undefined): string {
+  return id === undefined || id === model.root.id ? 'self' : `self.${id}`;
 }
 
 function applyLayout(model: GenModel): string {
@@ -92,7 +95,10 @@ function applyLayout(model: GenModel): string {
   // 親ごとに「コンテナの設定 → 子の配置（children の順）」の順に書く。pack はこの順序が配置結果に影響する
   for (const container of containers) {
     const children = byParent.get(container.id) ?? [];
-    const containerLines = [...containerSettings(container), ...children.map(placement)];
+    const containerLines = [
+      ...containerSettings(model, container),
+      ...children.map((child) => placement(model, child)),
+    ];
     if (containerLines.length === 0) continue;
     if (lines.length > 1) lines.push('');
     lines.push(...containerLines.map((l) => `${INDENT}${l}`));
@@ -101,10 +107,10 @@ function applyLayout(model: GenModel): string {
   return block(1, lines);
 }
 
-function containerSettings(container: GenWidget): string[] {
+function containerSettings(model: GenModel, container: GenWidget): string[] {
   const layout = container.layout;
   if (!layout) return [];
-  const self = `self.${container.id}`;
+  const self = ref(model, container.id);
   const lines: string[] = [];
   if (layout.manager === 'grid') {
     for (const [axis, lines_] of [
@@ -123,13 +129,13 @@ function containerSettings(container: GenWidget): string[] {
   return lines;
 }
 
-function placement(widget: GenWidget): string {
-  const self = `self.${widget.id}`;
+function placement(model: GenModel, widget: GenWidget): string {
+  const self = ref(model, widget.id);
   const args = Object.entries(widget.placement).map(([k, v]) => `${k}=${pyLiteral(v)}`);
   switch (widget.parentKind) {
     case 'notebook':
     case 'paned':
-      return `self.${widget.parentId ?? ''}.add(${[self, ...args].join(', ')})`;
+      return `${ref(model, widget.parentId)}.add(${[self, ...args].join(', ')})`;
     case 'pack':
     case 'grid':
     case 'place':
@@ -144,10 +150,11 @@ function bindEvents(model: GenModel): string {
   const lines = ['def tkd_bind_events(self):'];
   for (const event of model.events) {
     const handler = `self.${event.handler}`;
+    const target = ref(model, event.widgetId);
     lines.push(
       event.kind === 'option'
-        ? `${INDENT}self.${event.widgetId}.configure(${optionName(event.name)}=${handler})`
-        : `${INDENT}self.${event.widgetId}.bind(${pyString(event.name)}, ${handler})`,
+        ? `${INDENT}${target}.configure(${optionName(event.name)}=${handler})`
+        : `${INDENT}${target}.bind(${pyString(event.name)}, ${handler})`,
     );
   }
   if (lines.length === 1) lines.push(`${INDENT}pass`);
@@ -162,16 +169,20 @@ function handlerStub(handler: GenHandler): string {
 }
 
 function scaffold(model: GenModel, sourceName: string, rendered: (id: string) => string): string {
-  const isToplevel = model.root.className === 'tk.Toplevel';
-  const init = isToplevel
-    ? [`${INDENT}def __init__(self, master):`, `${INDENT}${INDENT}self.master = master`]
-    : [`${INDENT}def __init__(self):`];
+  const isTk = model.root.className === 'tk.Tk';
+  // 基底クラスの生成時にしか指定できないオプション（class_ など）は、利用者がコンストラクタ引数で渡せるようにする
+  const init = isTk
+    ? [`${INDENT}def __init__(self, **kwargs):`, `${INDENT}${INDENT}super().__init__(**kwargs)`]
+    : [
+        `${INDENT}def __init__(self, master, **kwargs):`,
+        `${INDENT}${INDENT}super().__init__(master, **kwargs)`,
+      ];
   const lines = [
     'import tkinter as tk',
     'from tkinter import ttk',
     '',
     '',
-    `class ${model.className}:`,
+    `class ${model.className}(${pyClass(model.root.className)}):`,
     `${INDENT}"""tk-designer で作成した画面（${sourceName}）。マーカーで囲まれた区間は再生成で上書きされる。"""`,
     '',
     ...init,
@@ -187,14 +198,11 @@ function scaffold(model: GenModel, sourceName: string, rendered: (id: string) =>
     '',
     rendered('tkd_bind_events'),
     '',
-    ...(isToplevel
-      ? []
-      : [`${INDENT}def run(self):`, `${INDENT}${INDENT}self.${model.root.id}.mainloop()`, '']),
     `${INDENT}# <tk-designer:handler-stubs>`,
     ...model.handlers.flatMap((h) => ['', handlerStub(h).trimEnd()]),
-    ...(isToplevel
-      ? []
-      : ['', '', 'if __name__ == "__main__":', `${INDENT}${model.className}().run()`]),
+    ...(isTk
+      ? ['', '', 'if __name__ == "__main__":', `${INDENT}${model.className}().mainloop()`]
+      : []),
   ];
   return `${lines.join('\n')}\n`;
 }

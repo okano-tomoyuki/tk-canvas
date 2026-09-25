@@ -11,6 +11,7 @@ export type DiagnosticCode =
   // 名前
   | 'invalid-identifier'
   | 'duplicate-name'
+  | 'reserved-name'
   // カタログ
   | 'unknown-class'
   | 'unknown-option'
@@ -24,6 +25,7 @@ export type DiagnosticCode =
   | 'handler-signature-conflict'
   // 構造上の制約
   | 'invalid-child-class'
+  | 'window-not-allowed'
   | 'layout-not-allowed'
   | 'children-not-allowed'
   | 'missing-layout'

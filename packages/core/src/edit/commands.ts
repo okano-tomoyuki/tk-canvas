@@ -5,8 +5,9 @@
  */
 import { produce } from 'immer';
 import { getWidgetCatalog } from '../catalog/catalog.ts';
-import { isValidIdentifier } from '../identifier.ts';
+import { memberNameProblem } from '../identifier.ts';
 import { containerKindOf } from '../dsl/placement.ts';
+import { isWindowClass } from '../dsl/schema.ts';
 import type {
   Binding,
   CodegenSettings,
@@ -111,7 +112,7 @@ function apply(doc: TkuiDocument, command: EditCommand): void {
       const parent = requireNode(doc, command.parentId);
       const info = getWidgetCatalog().classes.get(command.className);
       if (!info) throw new CommandError(`${command.className} はカタログにないクラスです`);
-      if (info.name === 'tk.Tk' || info.name === 'tk.Toplevel') {
+      if (isWindowClass(info.name)) {
         throw new CommandError(`${info.name} は追加できません`);
       }
       requireContainer(parent);
@@ -188,6 +189,11 @@ function apply(doc: TkuiDocument, command: EditCommand): void {
 
     case 'setWindow': {
       const window = removeUndefined({ ...command.window });
+      if (Object.keys(window).length > 0 && !isWindowClass(doc.root.class)) {
+        throw new CommandError(
+          `${doc.root.class} はウィンドウではないため、window は指定できません`,
+        );
+      }
       setOrDelete(doc.root, 'window', Object.keys(window).length > 0 ? window : undefined);
       return;
     }
@@ -243,9 +249,9 @@ function apply(doc: TkuiDocument, command: EditCommand): void {
 
     case 'renameHandler': {
       if (command.newName === command.name) return;
-      const problem = isValidIdentifier(command.newName);
+      const problem = memberNameProblem(command.newName);
       if (problem)
-        throw new CommandError(`"${command.newName}" は名前として使えません（${problem}）`);
+        throw new CommandError(`"${command.newName}" は名前として使えません: ${problem}`);
       // 既存のハンドラ名への改名は「統合」として許す。ウィジェット・変数の名前とは重複できない
       const others = collectMemberNames(doc);
       const isHandler = [...walkNodes(doc)].some(
@@ -362,8 +368,8 @@ function requireContainer(node: AnyNode): void {
 }
 
 function requireNewName(doc: TkuiDocument, name: string): void {
-  const problem = isValidIdentifier(name);
-  if (problem) throw new CommandError(`"${name}" は名前として使えません（${problem}）`);
+  const problem = memberNameProblem(name);
+  if (problem) throw new CommandError(`"${name}" は名前として使えません: ${problem}`);
   if (collectMemberNames(doc).has(name)) {
     throw new CommandError(`"${name}" は既に使われています`);
   }

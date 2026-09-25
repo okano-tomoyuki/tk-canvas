@@ -198,6 +198,26 @@ input {
     sans-serif;
 }
 
+/* Frame をルートにした部品。ウィンドウ枠の代わりに名前を出し、周りの余白は台として示す */
+.design-part {
+  display: inline-block;
+  margin: 16px;
+}
+
+.design-part-caption {
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.design-client.design-surface {
+  background: transparent;
+  outline: 1px dashed var(--vscode-widget-border, #888);
+}
+
+.design-surface > .widget:first-child {
+  background: #f0f0f0;
+}
+
 .design-client {
   position: relative;
   overflow: hidden;
@@ -554,4 +574,60 @@ select {
 
 .palette-items button[draggable='true'] {
   cursor: grab;
+}
+
+/* ---- コード生成の画面 ---- */
+
+.codegen-view {
+  max-width: 640px;
+  padding: 16px;
+}
+
+.codegen-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.codegen-header h2 {
+  margin: 0;
+}
+
+.codegen-target {
+  margin: 16px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--vscode-widget-border, #888);
+  border-radius: 4px;
+}
+
+.codegen-toggle {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: bold;
+}
+
+.codegen-fields {
+  margin-top: 8px;
+}
+
+.codegen-footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.codegen-footer button.primary {
+  padding: 4px 16px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: none;
+}
+
+.codegen-footer button.primary:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.codegen-footer button.primary:disabled {
+  opacity: 0.5;
 }

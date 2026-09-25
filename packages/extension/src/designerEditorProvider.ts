@@ -33,7 +33,12 @@ export class DesignerEditorProvider implements vscode.CustomTextEditorProvider {
 
     const post = (message: ExtensionToWebviewMessage) => panel.webview.postMessage(message);
     const postDocument = () =>
-      post({ type: 'document', version: document.version, text: document.getText() });
+      post({
+        type: 'document',
+        version: document.version,
+        text: document.getText(),
+        fileName: document.uri.path.split('/').pop() ?? '',
+      });
 
     // 編集は届いた順に1つずつ適用する（WorkspaceEdit の適用が重ならないように）
     let editQueue = Promise.resolve();

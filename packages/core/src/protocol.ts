@@ -5,8 +5,16 @@
 import type { EditCommand } from './edit/commands.ts';
 
 export type ExtensionToWebviewMessage =
-  /** TextDocument の現在の内容。変更のたびに送る（テキストエディタでの編集や Undo/Redo を含む） */
-  | { readonly type: 'document'; readonly version: number; readonly text: string }
+  /**
+   * TextDocument の現在の内容。変更のたびに送る（テキストエディタでの編集や Undo/Redo を含む）。
+   * fileName は DSL のファイル名（コード生成のクラス名・出力先の既定値に使う）
+   */
+  | {
+      readonly type: 'document';
+      readonly version: number;
+      readonly text: string;
+      readonly fileName: string;
+    }
   /** edit の処理結果。document の送信より後に届く */
   | {
       readonly type: 'editResult';

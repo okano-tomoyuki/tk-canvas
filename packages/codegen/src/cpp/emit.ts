@@ -2,7 +2,7 @@
  * C++（cpp_tk）のコード生成（docs/codegen-design.md §3）。
  * ヘッダ（宣言の区間）とソース（生成・配置・イベントの区間、ハンドラの雛形）の2ファイルを作る。
  */
-import type { LiteralValue, Variable } from '@tk-designer/core';
+import { ROOT_CLASSES, type LiteralValue, type Variable } from '@tk-designer/core';
 import type { GenHandler, GenModel, GenOption, GenValue, GenWidget } from '../model.ts';
 import type { GeneratedCode, Region } from '../region.ts';
 
@@ -11,25 +11,12 @@ const INDENT = '    ';
 export interface CppFiles {
   readonly header: GeneratedCode;
   readonly source: GeneratedCode;
-  /** 生成したコードに反映できなかった指定 */
-  readonly warnings: readonly string[];
 }
 
 /**
  * @param headerInclude ソースから見たヘッダの include パス
  */
 export function emitCpp(model: GenModel, sourceName: string, headerInclude: string): CppFiles {
-  const warnings: string[] = [];
-  const isToplevel = model.root.className === 'tk.Toplevel';
-
-  if (!isToplevel) {
-    for (const option of model.root.options.filter((o) => o.creationOnly)) {
-      warnings.push(
-        `${model.root.id}: ${option.name} は tk.Tk の生成時にしか指定できないため、C++ では反映されません`,
-      );
-    }
-  }
-
   const declarations: Region = { id: 'declarations', content: declarationLines(model), indent: 1 };
   const sourceRegions: Region[] = [
     { id: 'tkd_create_widgets', content: createWidgets(model), indent: 0 },
@@ -41,22 +28,25 @@ export function emitCpp(model: GenModel, sourceName: string, headerInclude: stri
     regions: [declarations],
     stubs: [],
     scaffold: (rendered) => headerScaffold(model, sourceName, rendered),
+    baseClass: {
+      className: model.className,
+      expected: cppClass(model.root.className),
+      known: ROOT_CLASSES.map((c) => cppClass(c)),
+    },
   };
   const source: GeneratedCode = {
     regions: sourceRegions,
     stubs: model.handlers.map((h) => ({ name: h.name, code: handlerStub(model.className, h) })),
     scaffold: (rendered) => sourceScaffold(model, headerInclude, rendered),
   };
-  return { header, source, warnings };
+  return { header, source };
 }
 
 // ---- ヘッダ --------------------------------------------------------------------
 
 function declarationLines(model: GenModel): string {
   const lines: string[] = [];
-  // 宣言順 = 構築順。Toplevel の親を最初に、ルートのウィンドウを変数・ウィジェットより先に宣言する（codegen-design.md M10 の注意）
-  if (model.root.className === 'tk.Toplevel') lines.push('const cpp_tk::Widget& tkd_master;');
-  lines.push(`${cppClass(model.root.className)} ${model.root.id};`);
+  // ルート（基底クラス）はメンバより先に構築されるため、変数・ウィジェットの宣言順は構築に影響しない
   for (const [name, variable] of model.variables) lines.push(`cpp_tk::${variable.type} ${name};`);
   for (const widget of model.widgets) lines.push(`${cppClass(widget.className)} ${widget.id};`);
   lines.push(
@@ -76,7 +66,6 @@ function headerScaffold(
   sourceName: string,
   rendered: (id: string) => string,
 ): string {
-  const isToplevel = model.root.className === 'tk.Toplevel';
   const name = model.className;
   return `${[
     '#pragma once',
@@ -84,14 +73,15 @@ function headerScaffold(
     '#include "cpp_tk.hpp"',
     '',
     `/** tk-designer で作成した画面（${sourceName}）。マーカーで囲まれた区間は再生成で上書きされる。 */`,
-    `class ${name}`,
+    `class ${name} : public ${cppClass(model.root.className)}`,
     '{',
     'public:',
-    isToplevel ? `${INDENT}explicit ${name}(const cpp_tk::Widget& master);` : `${INDENT}${name}();`,
+    model.root.className === 'tk.Tk'
+      ? `${INDENT}${name}();`
+      : `${INDENT}explicit ${name}(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options = {});`,
     // コールバックが this を捕捉するため、コピー・移動はできない
     `${INDENT}${name}(const ${name}&) = delete;`,
     `${INDENT}${name}& operator=(const ${name}&) = delete;`,
-    ...(isToplevel ? [] : ['', `${INDENT}void run();`]),
     '',
     'private:',
     rendered('declarations'),
@@ -102,24 +92,19 @@ function headerScaffold(
 // ---- ソース --------------------------------------------------------------------
 
 function createWidgets(model: GenModel): string {
-  const root = model.root;
   const lines: string[] = [`void ${model.className}::tkd_create_widgets()`, '{'];
-  if (root.className === 'tk.Toplevel') {
-    lines.push(`${INDENT}${root.id} = tk::Toplevel(tkd_master${mapArg(root.options)});`);
-  } else {
-    const config = root.options.filter((o) => !o.creationOnly);
-    if (config.length > 0) lines.push(`${INDENT}${root.id}.config(${optionMap(config)});`);
-  }
   lines.push(...windowSettings(model));
+  if (model.root.options.length > 0)
+    lines.push(`${INDENT}config(${optionMap(model.root.options)});`);
 
   const initial = model.variables.filter(([, v]) => v.value !== undefined);
-  if (initial.length > 0) lines.push('');
+  if (initial.length > 0 && lines.length > 2) lines.push('');
   for (const [name, variable] of initial)
     lines.push(`${INDENT}${name}.set(${variableValue(variable)});`);
 
-  if (model.widgets.length > 0) lines.push('');
+  if (model.widgets.length > 0 && lines.length > 2) lines.push('');
   for (const widget of model.widgets) {
-    const parent = `${widget.parentId ?? root.id}.as_parent()`;
+    const parent = member(model, widget.parentId, 'as_parent()');
     lines.push(
       `${INDENT}${widget.id} = ${cppClass(widget.className, 'tk')}(${parent}${mapArg(widget.options)});`,
     );
@@ -130,20 +115,23 @@ function createWidgets(model: GenModel): string {
 
 function windowSettings(model: GenModel): string[] {
   const w = model.window;
-  const target = `${INDENT}${model.root.id}`;
   const lines: string[] = [];
-  if (w.title !== undefined) lines.push(`${target}.title(${cppString(w.title)});`);
+  if (w.title !== undefined) lines.push(`title(${cppString(w.title)});`);
   if (w.geometry !== undefined) {
-    lines.push(`${target}.geometry(${cppString(w.geometry)});`);
+    lines.push(`geometry(${cppString(w.geometry)});`);
   } else if (model.root.className === 'tk.Tk') {
     // cpp_tk の Tk() は geometry("300x300") を設定するため、Tkinter と同じく要求サイズに戻す
-    lines.push(`${target}.geometry("");`);
+    lines.push('geometry("");');
   }
-  if (w.resizable)
-    lines.push(`${target}.resizable(${String(w.resizable[0])}, ${String(w.resizable[1])});`);
-  if (w.minsize) lines.push(`${target}.minsize(${String(w.minsize[0])}, ${String(w.minsize[1])});`);
-  if (w.maxsize) lines.push(`${target}.maxsize(${String(w.maxsize[0])}, ${String(w.maxsize[1])});`);
-  return lines;
+  if (w.resizable) lines.push(`resizable(${String(w.resizable[0])}, ${String(w.resizable[1])});`);
+  if (w.minsize) lines.push(`minsize(${String(w.minsize[0])}, ${String(w.minsize[1])});`);
+  if (w.maxsize) lines.push(`maxsize(${String(w.maxsize[0])}, ${String(w.maxsize[1])});`);
+  return lines.map((l) => `${INDENT}${l}`);
+}
+
+/** ウィジェット id のメンバ関数の呼び出し。ルートは生成クラス自身なので、基底クラスのメンバ関数を直接呼ぶ */
+function member(model: GenModel, id: string | undefined, call: string): string {
+  return id === undefined || id === model.root.id ? call : `${id}.${call}`;
 }
 
 function variableValue(variable: Variable): string {
@@ -168,7 +156,7 @@ function applyLayout(model: GenModel): string {
   let first = true;
   for (const container of [model.root, ...model.widgets]) {
     const children = byParent.get(container.id) ?? [];
-    const block = [...containerSettings(container), ...children.flatMap(placement)];
+    const block = [...containerSettings(model, container), ...children.flatMap(placement)];
     if (block.length === 0) continue;
     if (!first) lines.push('');
     first = false;
@@ -178,7 +166,7 @@ function applyLayout(model: GenModel): string {
   return lines.join('\n');
 }
 
-function containerSettings(container: GenWidget): string[] {
+function containerSettings(model: GenModel, container: GenWidget): string[] {
   const layout = container.layout;
   if (!layout) return [];
   const lines: string[] = [];
@@ -188,14 +176,14 @@ function containerSettings(container: GenWidget): string[] {
       ['row', layout.rows],
     ] as const) {
       for (const [index, config] of Object.entries(configs ?? {})) {
-        lines.push(
-          `${container.id}.grid_${axis}configure(${index}, ${literalMap(Object.entries(config))});`,
-        );
+        const call = member(model, container.id, `grid_${axis}configure`);
+        lines.push(`${call}(${index}, ${literalMap(Object.entries(config))});`);
       }
     }
   }
   if ('propagate' in layout && layout.propagate !== undefined) {
-    lines.push(`${container.id}.${layout.manager}_propagate(${String(layout.propagate)});`);
+    const call = member(model, container.id, `${layout.manager}_propagate`);
+    lines.push(`${call}(${String(layout.propagate)});`);
   }
   return lines;
 }
@@ -235,16 +223,18 @@ function bindEvents(model: GenModel): string {
   const signatures = new Map(model.handlers.map((h) => [h.name, h.signature]));
   for (const event of model.events) {
     if (event.kind === 'bind') {
+      const call = member(model, event.widgetId, 'bind');
       lines.push(
-        `${INDENT}${event.widgetId}.bind(${cppString(event.name)}, [this](const tk::Event& event) { ${event.handler}(event); });`,
+        `${INDENT}${call}(${cppString(event.name)}, [this](const tk::Event& event) { ${event.handler}(event); });`,
       );
-    } else if (signatures.get(event.handler) === 'value') {
-      lines.push(
-        `${INDENT}${event.widgetId}.${event.name}([this](const double& value) { ${event.handler}(value); });`,
-      );
-    } else {
-      lines.push(`${INDENT}${event.widgetId}.${event.name}([this]() { ${event.handler}(); });`);
+      continue;
     }
+    const call = member(model, event.widgetId, event.name);
+    lines.push(
+      signatures.get(event.handler) === 'value'
+        ? `${INDENT}${call}([this](const double& value) { ${event.handler}(value); });`
+        : `${INDENT}${call}([this]() { ${event.handler}(); });`,
+    );
   }
   lines.push('}');
   return lines.join('\n');
@@ -274,24 +264,26 @@ function sourceScaffold(
   rendered: (id: string) => string,
 ): string {
   const name = model.className;
-  const isToplevel = model.root.className === 'tk.Toplevel';
+  const constructor =
+    model.root.className === 'tk.Tk'
+      ? [`${name}::${name}()`]
+      : [
+          `${name}::${name}(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options)`,
+          `${INDENT}: ${cppClass(model.root.className)}(parent, options)`,
+        ];
   const lines = [
     `#include "${headerInclude}"`,
     '',
     'namespace tk = cpp_tk;',
     'namespace ttk = cpp_tk::ttk;',
     '',
-    isToplevel ? `${name}::${name}(const cpp_tk::Widget& master)` : `${name}::${name}()`,
-    ...(isToplevel ? [`${INDENT}: tkd_master(master)`] : []),
+    ...constructor,
     '{',
     `${INDENT}tkd_create_widgets();`,
     `${INDENT}tkd_apply_layout();`,
     `${INDENT}tkd_bind_events();`,
     '}',
     '',
-    ...(isToplevel
-      ? []
-      : [`void ${name}::run()`, '{', `${INDENT}${model.root.id}.mainloop();`, '}', '']),
     rendered('tkd_create_widgets'),
     '',
     rendered('tkd_apply_layout'),

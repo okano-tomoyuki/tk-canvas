@@ -2,11 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class MainWindow(tk.Tk):
-    """tk-designer で作成した画面（main_window.tkui.json）。マーカーで囲まれた区間は再生成で上書きされる。"""
+class SettingsPanel(ttk.Labelframe):
+    """tk-designer で作成した画面（settings_panel.tkui.json）。マーカーで囲まれた区間は再生成で上書きされる。"""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
         # <tk-designer:begin id="declarations">
         self.user_name: tk.StringVar
         self.mode: tk.IntVar
@@ -27,10 +27,7 @@ class MainWindow(tk.Tk):
 
     # <tk-designer:begin id="tkd_create_widgets">
     def tkd_create_widgets(self):
-        self.title("Sample")
-        self.geometry("400x300")
-        self.resizable(True, False)
-        self.minsize(200, 100)
+        self.configure(text="Settings", padding=8)
 
         self.user_name = tk.StringVar(master=self, value="")
         self.mode = tk.IntVar(master=self, value=1)
@@ -44,7 +41,7 @@ class MainWindow(tk.Tk):
         self.tabs = ttk.Notebook(self)
         self.general_page = ttk.Frame(self.tabs, padding=8)
         self.submit_button = ttk.Button(self.general_page, text="OK")
-    # <tk-designer:end id="tkd_create_widgets" hash="362c1d5c">
+    # <tk-designer:end id="tkd_create_widgets" hash="9a8fe07f">
 
     # <tk-designer:begin id="tkd_apply_layout">
     def tkd_apply_layout(self):
@@ -65,12 +62,16 @@ class MainWindow(tk.Tk):
 
     # <tk-designer:begin id="tkd_bind_events">
     def tkd_bind_events(self):
+        self.bind("<Configure>", self.on_resize)
         self.name_entry.bind("<Return>", self.on_name_return)
         self.level_scale.configure(command=self.on_level)
         self.submit_button.configure(command=self.on_submit)
-    # <tk-designer:end id="tkd_bind_events" hash="53528e32">
+    # <tk-designer:end id="tkd_bind_events" hash="b6ea4e06">
 
     # <tk-designer:handler-stubs>
+
+    def on_resize(self, event):
+        pass
 
     def on_name_return(self, event):
         pass
@@ -80,7 +81,3 @@ class MainWindow(tk.Tk):
 
     def on_submit(self):
         pass
-
-
-if __name__ == "__main__":
-    MainWindow().mainloop()

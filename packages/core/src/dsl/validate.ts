@@ -3,27 +3,18 @@
  */
 import { findOption, getWidgetCatalog } from '../catalog/catalog.ts';
 import type { WidgetClassInfo } from '../catalog/types.ts';
-import { isValidIdentifier, type IdentifierProblem } from '../identifier.ts';
+import { describeIdentifierProblem, isBaseMemberName, isValidIdentifier } from '../identifier.ts';
 import type { Diagnostic, DiagnosticCode, JsonPath } from './diagnostics.ts';
 import { checkLiteralValue } from './optionValue.ts';
 import { containerKindOf, PLACEMENT_SCHEMAS, type ContainerKind } from './placement.ts';
 import {
-  ROOT_CLASSES,
+  isWindowClass,
   type OptionValue,
   type RootNode,
   type TkuiDocument,
   type WidgetNode,
 } from './schema.ts';
 import type { HandlerSignature } from './signature.ts';
-
-const IDENTIFIER_PROBLEM_MESSAGES: Readonly<Record<IdentifierProblem, string>> = {
-  empty: '空にはできません',
-  'invalid-characters': '英字・数字・_ のみ使用でき、数字で始めることはできません',
-  'cpp-keyword': 'C++ のキーワードは使用できません',
-  'python-keyword': 'Python のキーワードは使用できません',
-  'reserved-prefix': '"tkd_" で始まる名前は予約されています',
-  'cpp-reserved': '"__" を含む名前と "_" + 大文字で始まる名前は C++ で予約されています',
-};
 
 const SIGNATURE_LABELS: Readonly<Record<HandlerSignature, string>> = {
   none: '引数なし',
@@ -69,7 +60,7 @@ class Validator {
         this.report(
           'invalid-identifier',
           ['codegen', target, 'className'],
-          `"${className}": ${IDENTIFIER_PROBLEM_MESSAGES[problem]}`,
+          `"${className}": ${describeIdentifierProblem(problem)}`,
         );
       }
     }
@@ -91,11 +82,11 @@ class Validator {
     this.diagnostics.push({ severity, code, message, path });
   }
 
-  private declareName(name: string, kind: NameKind, path: JsonPath) {
-    const problem = isValidIdentifier(name);
-    if (problem) {
-      this.report('invalid-identifier', path, `"${name}": ${IDENTIFIER_PROBLEM_MESSAGES[problem]}`);
-    }
+  /**
+   * @param member 生成クラスのメンバになる名前か（ルートの id はメンバにならない）
+   */
+  private declareName(name: string, kind: NameKind, path: JsonPath, member = true) {
+    if (member) this.checkMemberName(name, path);
     const existing = this.names.get(name);
     if (existing) {
       this.report(
@@ -108,18 +99,40 @@ class Validator {
     this.names.set(name, kind);
   }
 
+  private checkMemberName(name: string, path: JsonPath) {
+    const problem = isValidIdentifier(name);
+    if (problem) {
+      this.report('invalid-identifier', path, `"${name}": ${describeIdentifierProblem(problem)}`);
+    } else if (isBaseMemberName(name)) {
+      this.report(
+        'reserved-name',
+        path,
+        `"${name}": 生成されるクラスの基底クラス（Tk・Frame など）のメンバと同じ名前は使用できません`,
+      );
+    }
+  }
+
   // ---- ノード -------------------------------------------------------------
 
   private visitRoot(root: RootNode) {
     const path: JsonPath = ['root'];
-    this.declareName(root.id, 'widget', [...path, 'id']);
+    // ルートの id は生成クラスのメンバにならない（生成クラス自身がルート。docs/adr/0011）が、
+    // デザイナー上でウィジェットを指す名前として、他の名前との重複は認めない
+    this.declareName(root.id, 'widget', [...path, 'id'], false);
+    if (root.window && !isWindowClass(root.class)) {
+      this.report(
+        'window-not-allowed',
+        [...path, 'window'],
+        `${root.class} はウィンドウではないため、window は指定できません`,
+      );
+    }
     this.visitCommon(root, path);
   }
 
   private visitWidget(node: WidgetNode, path: JsonPath, parentKind: ContainerKind | undefined) {
     this.declareName(node.id, 'widget', [...path, 'id']);
 
-    if ((ROOT_CLASSES as readonly string[]).includes(node.class)) {
+    if (isWindowClass(node.class)) {
       this.report(
         'invalid-child-class',
         [...path, 'class'],

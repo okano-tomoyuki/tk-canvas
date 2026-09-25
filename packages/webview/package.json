@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "dependencies": {
+    "@tk-designer/codegen": "workspace:*",
     "@tk-designer/core": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

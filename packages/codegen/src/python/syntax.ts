@@ -14,4 +14,12 @@ export const PYTHON_SYNTAX: LanguageSyntax = {
     while (at > 0 && lines[at - 1]?.trim() === '') at--;
     return at;
   },
+  baseClassesOf: (text, className) => {
+    const match = new RegExp(`^class\\s+${className}\\s*\\(([^)]*)\\)\\s*:`, 'm').exec(text);
+    if (!match) return undefined;
+    return (match[1] ?? '')
+      .split(',')
+      .map((b) => b.replace(/\s+/g, ''))
+      .filter((b) => b.length > 0 && !b.includes('='));
+  },
 };

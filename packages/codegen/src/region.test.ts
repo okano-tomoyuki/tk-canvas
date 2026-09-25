@@ -32,10 +32,7 @@ describe('マーカー区間のマージ', () => {
   });
 
   it('区間内の手編集は上書きし、その区間を知らせる', () => {
-    const edited = INITIAL.replace(
-      'self.main_window.title("Sample")',
-      'self.main_window.title("Edited")',
-    );
+    const edited = INITIAL.replace('self.title("Sample")', 'self.title("Edited")');
     const result = generate(edited);
     expect(result.text).toBe(INITIAL);
     expect(result.modifiedRegions).toEqual(['tkd_create_widgets']);
@@ -43,8 +40,8 @@ describe('マーカー区間のマージ', () => {
 
   it('空白・改行の違い（フォーマッタによる整形）は手編集とみなさない', () => {
     const reformatted = INITIAL.replace(
-      'self.main_window.title("Sample")',
-      'self.main_window.title(\n            "Sample"\n        )',
+      'self.title("Sample")',
+      'self.title(\n            "Sample"\n        )',
     );
     expect(generate(reformatted).modifiedRegions).toEqual([]);
   });

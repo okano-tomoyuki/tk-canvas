@@ -1,7 +1,7 @@
 import {
   collectHandlers,
   getWidgetCatalog,
-  isValidIdentifier,
+  memberNameProblem,
   type AnyNode,
   type Binding,
   type Diagnostic,
@@ -46,8 +46,7 @@ export function EventsSection({ node, nodePath, diagnostics }: EventsSectionProp
   const setBindings = (next: readonly Binding[]) => {
     dispatch({ type: 'setBindings', id: node.id, bindings: next });
   };
-  const validateName = (text: string) =>
-    isValidIdentifier(text.trim()) ? 'メソッド名として使えない名前です' : undefined;
+  const validateName = (text: string) => memberNameProblem(text.trim()) ?? undefined;
 
   return (
     <section className="inspector-section">

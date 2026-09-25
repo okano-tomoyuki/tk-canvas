@@ -2,7 +2,7 @@ import {
   collectHandlers,
   countVariableReferences,
   formatValue,
-  isValidIdentifier,
+  memberNameProblem,
   parseInteger,
   parseNumber,
   VARIABLE_TYPES,
@@ -63,7 +63,8 @@ export function MembersPanel() {
                   value={name}
                   onCommit={(text) => {
                     const newName = text.trim();
-                    if (isValidIdentifier(newName)) return '名前として使えません';
+                    const problem = memberNameProblem(newName);
+                    if (problem) return problem;
                     dispatch({ type: 'renameVariable', name, newName });
                     return undefined;
                   }}
@@ -164,7 +165,8 @@ export function MembersPanel() {
                     value={h.name}
                     onCommit={(text) => {
                       const newName = text.trim();
-                      if (isValidIdentifier(newName)) return '名前として使えません';
+                      const problem = memberNameProblem(newName);
+                      if (problem) return problem;
                       dispatch({ type: 'renameHandler', name: h.name, newName });
                       return undefined;
                     }}

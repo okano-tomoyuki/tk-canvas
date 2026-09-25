@@ -3,18 +3,15 @@
 #include "cpp_tk.hpp"
 
 /** tk-designer で作成した画面（main_window.tkui.json）。マーカーで囲まれた区間は再生成で上書きされる。 */
-class MainWindow
+class MainWindow : public cpp_tk::Tk
 {
 public:
     MainWindow();
     MainWindow(const MainWindow&) = delete;
     MainWindow& operator=(const MainWindow&) = delete;
 
-    void run();
-
 private:
     // <tk-designer:begin id="declarations">
-    cpp_tk::Tk main_window;
     cpp_tk::StringVar user_name;
     cpp_tk::IntVar mode;
     cpp_tk::DoubleVar level;
@@ -34,5 +31,5 @@ private:
     void on_name_return(const cpp_tk::Event& event);
     void on_level(const double& value);
     void on_submit();
-    // <tk-designer:end id="declarations" hash="cc587728">
+    // <tk-designer:end id="declarations" hash="69fa850d">
 };

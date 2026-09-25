@@ -19,7 +19,7 @@ let store: DocumentStore;
 beforeEach(() => {
   sent = [];
   store = createDocumentStore((message) => sent.push(message));
-  store.getState().receiveDocument(1, TEXT);
+  store.getState().receiveDocument(1, TEXT, 'main_window.tkui.json');
 });
 
 function addLabel(id = 'label1') {
@@ -58,7 +58,7 @@ describe('documentStore', () => {
         children: [{ id: 'label1', class: 'ttk.Label', options: { text: 'label1' } }],
       },
     });
-    store.getState().receiveDocument(2, afterFirst);
+    store.getState().receiveDocument(2, afterFirst, 'main_window.tkui.json');
     store.getState().receiveEditResult(1, true);
 
     expect(hasWidget('label2')).toBe(true);

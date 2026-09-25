@@ -4,6 +4,7 @@
 import { getWidgetCatalog } from '../catalog/catalog.ts';
 import type { ContainerKind } from '../dsl/placement.ts';
 import type { Layout, OptionValue, Placement, WidgetNode } from '../dsl/schema.ts';
+import { isBaseMemberName } from '../identifier.ts';
 import { collectMemberNames } from './tree.ts';
 import type { TkuiDocument } from '../dsl/schema.ts';
 
@@ -13,14 +14,14 @@ export function nextWidgetId(doc: TkuiDocument, className: string): string {
   const used = collectMemberNames(doc);
   for (let n = 1; ; n++) {
     const candidate = `${base}${String(n)}`;
-    if (!used.has(candidate)) return candidate;
+    if (!used.has(candidate) && !isBaseMemberName(candidate)) return candidate;
   }
 }
 
 /** 他と重ならないメンバ名を作る（base が空いていればそのまま、使われていれば base2, base3, ...） */
 export function nextMemberName(doc: TkuiDocument, base: string): string {
   const used = collectMemberNames(doc);
-  if (!used.has(base)) return base;
+  if (!used.has(base) && !isBaseMemberName(base)) return base;
   for (let n = 2; ; n++) {
     const candidate = `${base}${String(n)}`;
     if (!used.has(candidate)) return candidate;

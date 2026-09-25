@@ -7,7 +7,7 @@ export function connectToHost(): void {
   onMessage((message) => {
     switch (message.type) {
       case 'document':
-        store.receiveDocument(message.version, message.text);
+        store.receiveDocument(message.version, message.text, message.fileName);
         break;
       case 'editResult':
         store.receiveEditResult(message.requestId, message.ok, message.error);

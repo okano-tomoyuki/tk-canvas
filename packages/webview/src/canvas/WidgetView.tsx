@@ -10,6 +10,8 @@ interface WidgetViewProps {
   /** Notebook で表示中のタブ（子の id） */
   readonly activeTab: string | undefined;
   readonly onSelect: (id: string) => void;
+  /** ドラッグで移動できるか（ルートは移動できない） */
+  readonly movable?: boolean;
 }
 
 /** 見た目の種類。Tk のクラスを、描き方の近いものごとにまとめる */
@@ -66,7 +68,7 @@ const VISUALS: Readonly<Record<string, Visual>> = {
 /**
  * 1つのウィジェットの簡易的な見た目。実際の Tk の描画は再現せず、種類と位置・大きさが分かることを目的とする。
  */
-export function WidgetView({ node, rect, activeTab, onSelect }: WidgetViewProps) {
+export function WidgetView({ node, rect, activeTab, onSelect, movable = true }: WidgetViewProps) {
   const setDragging = useUiStore((s) => s.setDragging);
   const visual = VISUALS[node.class] ?? 'generic';
   const style: CSSProperties = {
@@ -92,8 +94,9 @@ export function WidgetView({ node, rect, activeTab, onSelect }: WidgetViewProps)
       title={`${node.id} (${node.class})`}
       onClick={handleClick}
       // ドラッグで移動する（ドロップ先の判定はキャンバスが行う）
-      draggable
+      draggable={movable}
       onDragStart={(e) => {
+        if (!movable) return;
         e.stopPropagation();
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', node.id);

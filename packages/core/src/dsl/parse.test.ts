@@ -257,4 +257,47 @@ describe('カタログによる検証', () => {
     });
     expect(codes(text)).toEqual(['invalid-child-class']);
   });
+
+  it.each(['ttk.Frame', 'tk.Frame', 'ttk.Labelframe', 'tk.LabelFrame'])(
+    '%s はルートにも子にも使える',
+    (className) => {
+      const text = doc({
+        class: className,
+        layout: { manager: 'pack' },
+        children: [{ id: 'inner', class: className }],
+      });
+      expect(codes(text)).toEqual([]);
+    },
+  );
+
+  it('ルートにできないクラスは構造の検証で弾く', () => {
+    expect(codes(doc({ class: 'ttk.Notebook' }))).toEqual(['schema']);
+  });
+
+  it('window はウィンドウ（Tk / Toplevel）のルートにだけ指定できる', () => {
+    expect(codes(doc({ class: 'ttk.Frame', window: { title: 'x' } }))).toEqual([
+      'window-not-allowed',
+    ]);
+  });
+
+  it('基底クラスのメンバと同じ名前は使えない（ルートの id を除く）', () => {
+    const text = doc(
+      {
+        id: 'title',
+        layout: { manager: 'pack' },
+        children: [
+          { id: 'frame', class: 'ttk.Frame' },
+          { id: 'post', class: 'ttk.Button', options: { command: { handler: 'destroy' } } },
+        ],
+      },
+      { text: { type: 'StringVar' } },
+    );
+    const diagnostics = parseDocument(text).diagnostics;
+    expect(diagnostics.filter((d) => d.code === 'reserved-name').map((d) => d.path)).toEqual([
+      ['variables', 'text'],
+      ['root', 'children', 0, 'id'],
+      ['root', 'children', 1, 'id'],
+      ['root', 'children', 1, 'options', 'command', 'handler'],
+    ]);
+  });
 });

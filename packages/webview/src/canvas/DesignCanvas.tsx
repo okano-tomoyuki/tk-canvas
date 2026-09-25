@@ -2,6 +2,7 @@ import {
   computeLayout,
   findDropTarget,
   findNode,
+  isWindowClass,
   pathTo,
   walkNodes,
   type AnyNode,
@@ -12,13 +13,18 @@ import {
 } from '@tk-designer/core';
 import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { addWidgetAt, moveWidgetTo } from '../editing.ts';
-import { postMessage } from '../vscode.ts';
 import { useDocumentStore, useUiStore } from '../store/stores.ts';
 import { createCanvasMeasure, createMetrics } from './metrics.ts';
 import { WidgetView } from './WidgetView.tsx';
 
 /** 文字幅の計測結果をキャッシュするため、メトリクスはアプリ全体で1つだけ作る */
 const metrics = createMetrics(createCanvasMeasure());
+
+/** 空のウィンドウの大きさ（Tk は子もジオメトリの指定もないトップレベルを 200x200 で表示する） */
+const EMPTY_WINDOW_SIZE = 200;
+
+/** Frame のルートを置く台の最小の大きさ（小さい・空のルートにもドロップできるように） */
+const MIN_SURFACE = { width: 240, height: 160 };
 
 /**
  * デザイナーのキャンバス。レイアウトエンジン（docs/layout.md）で計算した位置にウィジェットを描く。
@@ -31,6 +37,7 @@ export function DesignCanvas() {
   const select = useUiStore((s) => s.select);
   const hoveredVariable = useUiStore((s) => s.hoveredVariable);
   const dragging = useUiStore((s) => s.dragging);
+  const setView = useUiStore((s) => s.setView);
   const clientRef = useRef<HTMLDivElement>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>();
 
@@ -47,6 +54,17 @@ export function DesignCanvas() {
   if (!doc || !layout) return null;
   const root = layout.get(doc.root.id);
   if (!root) return null;
+  const isWindow = isWindowClass(doc.root.class);
+  // ウィンドウは実際の大きさで表示する。Frame（部品）は要求サイズで表示し、周りにドロップできる余白をとる
+  const client = isWindow
+    ? {
+        width: root.rect.width || EMPTY_WINDOW_SIZE,
+        height: root.rect.height || EMPTY_WINDOW_SIZE,
+      }
+    : {
+        width: Math.max(root.rect.width, MIN_SURFACE.width),
+        height: Math.max(root.rect.height, MIN_SURFACE.height),
+      };
 
   /** ポインタ位置（ルートウィンドウの内側の左上が原点）でのドロップ先 */
   const targetAt = (e: DragEvent): DropTarget | undefined => {
@@ -61,21 +79,33 @@ export function DesignCanvas() {
       <div className="canvas-toolbar">
         <button
           type="button"
-          title="DSL の codegen の設定に従ってコードを生成する（既存のファイルはマーカー区間だけを更新）"
+          title="生成する言語・クラス名・出力先を指定してコードを生成する"
           onClick={() => {
-            postMessage({ type: 'generateCode' });
+            setView('codegen');
           }}
         >
-          コード生成
+          コード生成…
         </button>
       </div>
-      <div className="design-window" style={{ width: root.rect.width }}>
-        <div className="design-window-title">{doc.root.window?.title ?? doc.root.id}</div>
-        {/* 背景のクリックはウィンドウ（ルート）の選択 */}
+      <div className={isWindow ? 'design-window' : 'design-part'} style={{ width: client.width }}>
+        {isWindow ? (
+          <div className="design-window-title">{doc.root.window?.title ?? doc.root.id}</div>
+        ) : (
+          <div className="design-part-caption">
+            {doc.root.id}（{doc.root.class}）
+          </div>
+        )}
+        {/* 背景のクリックはルートの選択 */}
         <div
           ref={clientRef}
-          className={doc.root.id === selectedId ? 'design-client selected' : 'design-client'}
-          style={{ width: root.rect.width, height: root.rect.height }}
+          className={[
+            'design-client',
+            isWindow ? '' : 'design-surface',
+            isWindow && doc.root.id === selectedId ? 'selected' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={client}
           onClick={() => {
             select(doc.root.id);
           }}
@@ -100,6 +130,15 @@ export function DesignCanvas() {
             else moveWidgetTo(dragging.id, target);
           }}
         >
+          {!isWindow && (
+            <WidgetView
+              node={doc.root}
+              rect={root.rect}
+              activeTab={undefined}
+              onSelect={select}
+              movable={false}
+            />
+          )}
           {renderWidgets(doc, layout, selectedTabs, select)}
           {variableMarks.map(({ id, variable }) => {
             const box = layout.get(id);
@@ -109,7 +148,12 @@ export function DesignCanvas() {
               </div>
             ) : null;
           })}
-          <SelectionOverlay layout={layout} selectedId={selectedId} rootId={doc.root.id} />
+          <SelectionOverlay
+            layout={layout}
+            selectedId={selectedId}
+            // ウィンドウのルートは台（design-client）の枠で選択を示す
+            rootId={isWindow ? doc.root.id : undefined}
+          />
           {dropTarget && <DropOverlay layout={layout} target={dropTarget} />}
         </div>
       </div>
@@ -152,7 +196,7 @@ function SelectionOverlay({
 }: {
   readonly layout: LayoutResult;
   readonly selectedId: string | undefined;
-  readonly rootId: string;
+  readonly rootId: string | undefined;
 }) {
   const box = selectedId && selectedId !== rootId ? layout.get(selectedId) : undefined;
   if (!box?.mapped) return null;

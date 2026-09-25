@@ -1,6 +1,7 @@
 /**
  * DSL の id は生成コードのメンバ名になるため、C++ と Python の両方で識別子として使えなければならない。
  */
+import { CPP_BASE_MEMBERS, PYTHON_BASE_MEMBERS } from './baseMembers.ts';
 
 const CPP_KEYWORDS: ReadonlySet<string> = new Set([
   'alignas',
@@ -161,5 +162,35 @@ export function isValidIdentifier(id: string): IdentifierProblem | null {
   if (id.startsWith(RESERVED_PREFIX)) return 'reserved-prefix';
   // C++ では "__" を含む名前と "_大文字" で始まる名前は処理系予約
   if (id.includes('__') || /^_[A-Z]/.test(id)) return 'cpp-reserved';
+  return null;
+}
+
+const IDENTIFIER_PROBLEM_MESSAGES: Readonly<Record<IdentifierProblem, string>> = {
+  empty: '空にはできません',
+  'invalid-characters': '英字・数字・_ のみ使用でき、数字で始めることはできません',
+  'cpp-keyword': 'C++ のキーワードは使用できません',
+  'python-keyword': 'Python のキーワードは使用できません',
+  'reserved-prefix': '"tkd_" で始まる名前は予約されています',
+  'cpp-reserved': '"__" を含む名前と "_" + 大文字で始まる名前は C++ で予約されています',
+};
+
+export function describeIdentifierProblem(problem: IdentifierProblem): string {
+  return IDENTIFIER_PROBLEM_MESSAGES[problem];
+}
+
+/** 生成クラスの基底クラス（Tk・Frame など）のメンバと同じ名前か（docs/adr/0011） */
+export function isBaseMemberName(name: string): boolean {
+  return PYTHON_BASE_MEMBERS.has(name) || CPP_BASE_MEMBERS.has(name);
+}
+
+/**
+ * 生成クラスのメンバ（ウィジェット・変数・ハンドラ）の名前として使えるかを判定する。
+ * @returns 問題がなければ null、あれば利用者向けの説明
+ */
+export function memberNameProblem(name: string): string | null {
+  const problem = isValidIdentifier(name);
+  if (problem) return IDENTIFIER_PROBLEM_MESSAGES[problem];
+  if (isBaseMemberName(name))
+    return '生成されるクラスの基底クラス（Tk・Frame など）のメンバと同じ名前は使用できません';
   return null;
 }

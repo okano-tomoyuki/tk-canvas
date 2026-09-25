@@ -8,6 +8,7 @@
  * - 区間の中身は毎回置き換える。hash が中身と合わなければ、利用者が手で編集したものとして知らせる（M2 / M3）。
  * - マーカーの欠落・重複・入れ子・対応の誤りがあれば、何も書き込まずにエラーにする（M4）。
  * - ハンドラの雛形は、まだ定義されていないものだけを 1行マーカー <tk-designer:handler-stubs> の直後に追記する（M1 / M10）。
+ * - 既存のクラスの基底クラスが DSL のルートのクラスと違えば、何も書き込まずにエラーにする（docs/adr/0011）。
  */
 import { regionHash } from './hash.ts';
 
@@ -30,6 +31,16 @@ export interface GeneratedCode {
   readonly stubs: readonly HandlerStub[];
   /** 新規ファイルの内容。rendered(id) はマーカーつきの区間 */
   readonly scaffold: (rendered: (id: string) => string) => string;
+  /** 既存のファイルと照合する基底クラス（クラスを宣言するファイルだけ） */
+  readonly baseClass?: BaseClassCheck;
+}
+
+export interface BaseClassCheck {
+  readonly className: string;
+  /** 生成するコードでの基底クラスの書き方（例: "ttk.Frame" / "cpp_tk::ttk::Frame"） */
+  readonly expected: string;
+  /** ルートにできるすべてのクラスの書き方。既存のクラスの基底クラスのうち、これに含まれるものだけを照合する */
+  readonly known: readonly string[];
 }
 
 export interface LanguageSyntax {
@@ -40,6 +51,8 @@ export interface LanguageSyntax {
   readonly hasHandler: (text: string, name: string) => boolean;
   /** stubs マーカーがないときの追記位置（行番号。この行の前に挿入する） */
   readonly fallbackStubLine: (lines: readonly string[]) => number;
+  /** クラス className の基底クラスの一覧（書かれたとおり）。クラスが見つからなければ undefined */
+  readonly baseClassesOf: (text: string, className: string) => readonly string[] | undefined;
 }
 
 export type MergeResult =
@@ -122,6 +135,9 @@ export function mergeFile(
   if (typeof parsed === 'string')
     return { ok: false, error: `マーカーが壊れているため書き込みませんでした: ${parsed}` };
 
+  const baseProblem = checkBaseClass(existing, generated.baseClass, syntax);
+  if (baseProblem) return { ok: false, error: baseProblem };
+
   const missing = generated.regions.filter((r) => !parsed.some((p) => p.id === r.id));
   if (missing.length > 0) {
     return {
@@ -159,4 +175,25 @@ export function mergeFile(
     modifiedRegions,
     addedStubs: newStubs.map((s) => s.name),
   };
+}
+
+/**
+ * ルートのクラスを変えると、区間の外（クラスの宣言・コンストラクタ）も変える必要がある。
+ * 自動では書き換えず、利用者に知らせる（docs/adr/0011。対応は今後変わりうる）。
+ */
+function checkBaseClass(
+  existing: string,
+  check: BaseClassCheck | undefined,
+  syntax: LanguageSyntax,
+): string | undefined {
+  if (!check) return undefined;
+  const bases = syntax.baseClassesOf(existing, check.className);
+  // クラスが見つからない・既知の基底クラスがない（利用者が書き換えた）場合は照合しない
+  const found = bases?.filter((b) => check.known.includes(b)) ?? [];
+  if (found.length === 0 || found.includes(check.expected)) return undefined;
+  return (
+    `${check.className} の基底クラスが ${found.join(', ')} ですが、DSL のルートは ${check.expected} です。` +
+    '基底クラスが変わるとコンストラクタなども変わるため、自動では書き換えません。' +
+    '既存のファイルの基底クラスとコンストラクタを手で直すか、ファイルを削除（退避）してから生成してください。'
+  );
 }

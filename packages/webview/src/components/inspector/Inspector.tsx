@@ -1,4 +1,4 @@
-import { jsonPathOf } from '@tk-designer/core';
+import { isWindowClass, jsonPathOf } from '@tk-designer/core';
 import { renameWidget } from '../../editing.ts';
 import { useDocumentStore, useSelectedNode } from '../../store/stores.ts';
 import { messagesAt } from './diagnostics.ts';
@@ -43,10 +43,16 @@ export function Inspector() {
           }}
         />
         <FieldRow label="class">
-          <span>{node.class}</span>
+          <span>
+            {node.class}
+            {isRoot && <span className="muted">（生成するクラスの基底クラス）</span>}
+          </span>
         </FieldRow>
       </section>
-      {isRoot && <WindowSection window={doc.root.window} diagnostics={diagnostics} />}
+      {/* window はウィンドウのルートだけ（誤って指定されている場合も、消せるように表示する） */}
+      {isRoot && (isWindowClass(node.class) || doc.root.window) && (
+        <WindowSection window={doc.root.window} diagnostics={diagnostics} />
+      )}
       {parent && (
         <PlacementSection
           node={node}

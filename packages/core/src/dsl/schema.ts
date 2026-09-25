@@ -209,7 +209,24 @@ export const WindowSettings = z.strictObject({
   maxsize: z.tuple([NonNegativeInt, NonNegativeInt]).optional(),
 });
 
-export const ROOT_CLASSES = ['tk.Tk', 'tk.Toplevel'] as const;
+/** ウィンドウとして使うクラス。ルートにのみ使え、window（wm 系の設定）を指定できる */
+export const WINDOW_CLASSES = ['tk.Tk', 'tk.Toplevel'] as const;
+
+/** ルートにできるクラス。生成されるクラスはこれを継承する（docs/adr/0011） */
+export const ROOT_CLASSES = [
+  ...WINDOW_CLASSES,
+  'ttk.Frame',
+  'tk.Frame',
+  'ttk.Labelframe',
+  'tk.LabelFrame',
+] as const;
+
+export type RootClass = (typeof ROOT_CLASSES)[number];
+export type WindowClass = (typeof WINDOW_CLASSES)[number];
+
+export function isWindowClass(className: string): className is WindowClass {
+  return (WINDOW_CLASSES as readonly string[]).includes(className);
+}
 
 export const RootNode = z
   .strictObject({
@@ -221,7 +238,11 @@ export const RootNode = z
     bindings: z.array(Binding).optional(),
     children: z.array(WidgetNode).optional(),
   })
-  .meta({ id: 'RootNode', description: 'ウィンドウ（生成されるクラス1つに対応する）' });
+  .meta({
+    id: 'RootNode',
+    description:
+      '画面のルート。生成されるクラスはこのクラスを継承する。window は tk.Tk / tk.Toplevel のときだけ指定できる',
+  });
 
 /** コード生成の設定（docs/adr/0010）。パスは DSL ファイルのあるフォルダからの相対パス */
 export const CodegenSettings = z

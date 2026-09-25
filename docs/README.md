@@ -34,6 +34,7 @@ Tcl/Tk 向け GUI デザイナー（VS Code 拡張）の設計ドキュメント
 | [0008](adr/0008-layout-engine-in-core.md) | キャンバス上のレイアウトは Tk のアルゴリズムを TypeScript で再現して計算する | 承認 |
 | [0009](adr/0009-dsl-schema-in-zod.md) | DSL のスキーマは Zod で TS 側に定義し、型と JSON Schema を導出する | 承認 |
 | [0010](adr/0010-codegen-config-and-trigger.md) | コード生成の設定は DSL に持ち、生成は利用者の明示的な操作で行う | 承認 |
+| [0011](adr/0011-root-as-base-class.md) | 生成するクラスはルートのクラスを継承する（is-A） | 承認 |
 
 ## 旧実装
 

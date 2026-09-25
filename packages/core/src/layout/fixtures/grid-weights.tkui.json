@@ -11,7 +11,7 @@
     },
     "children": [
       {
-        "id": "title",
+        "id": "heading",
         "class": "ttk.Label",
         "options": { "text": "A wide spanning title label" },
         "placement": { "row": 0, "column": 0, "columnspan": 3, "sticky": "ew" }

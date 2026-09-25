@@ -1,10 +1,10 @@
-#include "dialog.hpp"
+#include "settings_panel.hpp"
 
 namespace tk = cpp_tk;
 namespace ttk = cpp_tk::ttk;
 
-Dialog::Dialog(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options)
-    : cpp_tk::Toplevel(parent, options)
+SettingsPanel::SettingsPanel(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk::ArgValue>& options)
+    : cpp_tk::ttk::Labelframe(parent, options)
 {
     tkd_create_widgets();
     tkd_apply_layout();
@@ -12,9 +12,9 @@ Dialog::Dialog(const cpp_tk::Widget& parent, const std::map<std::string, cpp_tk:
 }
 
 // <tk-designer:begin id="tkd_create_widgets">
-void Dialog::tkd_create_widgets()
+void SettingsPanel::tkd_create_widgets()
 {
-    title("Dialog");
+    config({{"text", "Settings"}, {"padding", 8}});
 
     user_name.set("");
     mode.set(1);
@@ -28,10 +28,10 @@ void Dialog::tkd_create_widgets()
     general_page = ttk::Frame(tabs.as_parent(), {{"padding", 8}});
     submit_button = ttk::Button(general_page.as_parent(), {{"text", "OK"}});
 }
-// <tk-designer:end id="tkd_create_widgets" hash="921e7d20">
+// <tk-designer:end id="tkd_create_widgets" hash="8ff70f6c">
 
 // <tk-designer:begin id="tkd_apply_layout">
-void Dialog::tkd_apply_layout()
+void SettingsPanel::tkd_apply_layout()
 {
     grid_columnconfigure(1, {{"weight", 1}});
     grid_rowconfigure(3, {{"weight", 1}});
@@ -48,30 +48,36 @@ void Dialog::tkd_apply_layout()
     general_page.pack_propagate(false);
     submit_button.pack({{"side", "right"}});
 }
-// <tk-designer:end id="tkd_apply_layout" hash="160f383f">
+// <tk-designer:end id="tkd_apply_layout" hash="45e7d4f0">
 
 // <tk-designer:begin id="tkd_bind_events">
-void Dialog::tkd_bind_events()
+void SettingsPanel::tkd_bind_events()
 {
+    bind("<Configure>", [this](const tk::Event& event) { on_resize(event); });
     name_entry.bind("<Return>", [this](const tk::Event& event) { on_name_return(event); });
     level_scale.command([this](const double& value) { on_level(value); });
     submit_button.command([this]() { on_submit(); });
 }
-// <tk-designer:end id="tkd_bind_events" hash="db98f57d">
+// <tk-designer:end id="tkd_bind_events" hash="2072679c">
 
 // <tk-designer:handler-stubs>
 
-void Dialog::on_name_return(const tk::Event& event)
+void SettingsPanel::on_resize(const tk::Event& event)
 {
     // TODO: 実装
 }
 
-void Dialog::on_level(const double& value)
+void SettingsPanel::on_name_return(const tk::Event& event)
 {
     // TODO: 実装
 }
 
-void Dialog::on_submit()
+void SettingsPanel::on_level(const double& value)
+{
+    // TODO: 実装
+}
+
+void SettingsPanel::on_submit()
 {
     // TODO: 実装
 }

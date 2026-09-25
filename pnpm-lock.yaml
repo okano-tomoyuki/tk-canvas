@@ -246,6 +246,9 @@ importers:
 
   packages/webview:
     dependencies:
+      '@tk-designer/codegen':
+        specifier: workspace:*
+        version: link:../codegen
       '@tk-designer/core':
         specifier: workspace:*
         version: link:../core

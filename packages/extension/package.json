@@ -27,6 +27,27 @@
         "priority": "default"
       }
     ],
+    "commands": [
+      {
+        "command": "tkDesigner.newScreen",
+        "title": "新しい画面を作成",
+        "shortTitle": "Tk Designer の画面",
+        "category": "Tk Designer"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "tkDesigner.newScreen",
+          "group": "navigation@10"
+        }
+      ],
+      "file/newFile": [
+        {
+          "command": "tkDesigner.newScreen"
+        }
+      ]
+    },
     "jsonValidation": [
       {
         "fileMatch": "*.tkui.json",

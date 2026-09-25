@@ -154,7 +154,11 @@
           "type": "string",
           "enum": [
             "tk.Tk",
-            "tk.Toplevel"
+            "tk.Toplevel",
+            "ttk.Frame",
+            "tk.Frame",
+            "ttk.Labelframe",
+            "tk.LabelFrame"
           ]
         },
         "window": {
@@ -280,7 +284,7 @@
         "class"
       ],
       "additionalProperties": false,
-      "description": "ウィンドウ（生成されるクラス1つに対応する）"
+      "description": "画面のルート。生成されるクラスはこのクラスを継承する。window は tk.Tk / tk.Toplevel のときだけ指定できる"
     },
     "LiteralValue": {
       "anyOf": [

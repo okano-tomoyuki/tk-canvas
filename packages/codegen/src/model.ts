@@ -12,6 +12,7 @@ import {
   type HandlerSignature,
   type Layout,
   type LiteralValue,
+  type RootClass,
   type TkuiDocument,
   type Variable,
   type WindowSettings,
@@ -57,7 +58,9 @@ export interface GenHandler {
 
 export interface GenModel {
   readonly className: string;
-  readonly root: GenWidget & { readonly className: 'tk.Tk' | 'tk.Toplevel' };
+  /** 生成するクラスの基底クラス（docs/adr/0011）。root.options のうち生成時にしか指定できないものは含まない */
+  readonly root: GenWidget & { readonly className: RootClass };
+  /** wm 系の設定（ルートが tk.Tk / tk.Toplevel のときだけ） */
   readonly window: WindowSettings;
   readonly variables: readonly (readonly [string, Variable])[];
   /** ルート以外のウィジェット（親から順） */
@@ -120,8 +123,15 @@ export function buildModel(doc: TkuiDocument, className: string): GenModel {
   };
 
   const [rootNode, ...others] = [...walkNodes(doc)];
-  const root = toWidget(rootNode ?? doc.root) as GenModel['root'];
+  const rootWidget = toWidget(rootNode ?? doc.root);
   const widgets = others.map(toWidget);
+
+  const root = {
+    ...rootWidget,
+    className: doc.root.class,
+    // 生成時にしか指定できないオプションは反映できない（rootWarnings）
+    options: rootWidget.options.filter((o) => !o.creationOnly),
+  };
   return {
     className,
     root,
@@ -131,4 +141,19 @@ export function buildModel(doc: TkuiDocument, className: string): GenModel {
     events,
     handlers: [...handlers].map(([name, signature]) => ({ name, signature })),
   };
+}
+
+/**
+ * 生成したコードに反映できない指定（言語によらない）。
+ * ルートのオプションは基底クラスの生成後に configure で設定するため、生成時にしか指定できないものは反映できない。
+ */
+export function rootWarnings(doc: TkuiDocument): string[] {
+  const widgetClass = getWidgetCatalog().classes.get(doc.root.class);
+  if (!widgetClass) return [];
+  return Object.keys(doc.root.options ?? {})
+    .filter((name) => findOption(widgetClass, name)?.option.creationOnly)
+    .map(
+      (name) =>
+        `${doc.root.id}: ${name} は生成時にしか指定できないため、生成したコードには反映されません（生成したクラスのコンストラクタ引数で指定してください）`,
+    );
 }

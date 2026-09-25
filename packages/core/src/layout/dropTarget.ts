@@ -48,6 +48,10 @@ export function findDropTarget(
     if (movingNode && isDescendantOrSelf(movingNode, node)) continue;
     container = node;
   }
+  // ルートの外側（キャンバス上の余白。空のルートは大きさが 0 のこともある）はルートへのドロップとする
+  if (!container && containerKindOf(doc.root) && layout.get(doc.root.id)?.content) {
+    container = doc.root;
+  }
   if (!container) return undefined;
   const kind = containerKindOf(container);
   const box = layout.get(container.id);
@@ -78,8 +82,8 @@ export function findDropTarget(
       };
     }
     case 'place': {
-      const x = Math.round(point.x - box.content.x);
-      const y = Math.round(point.y - box.content.y);
+      const x = Math.max(0, Math.round(point.x - box.content.x));
+      const y = Math.max(0, Math.round(point.y - box.content.y));
       return {
         ...base,
         index: siblings.length,

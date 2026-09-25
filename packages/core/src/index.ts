@@ -1,4 +1,4 @@
-export { isValidIdentifier, type IdentifierProblem } from './identifier.ts';
+export { isValidIdentifier, memberNameProblem, type IdentifierProblem } from './identifier.ts';
 export type { ExtensionToWebviewMessage, WebviewToExtensionMessage } from './protocol.ts';
 
 export * from './dsl/schema.ts';
@@ -28,6 +28,7 @@ export type {
 
 export { applyCommand, type CommandResult, type EditCommand } from './edit/commands.ts';
 export { defaultPlacement, nextMemberName, nextWidgetId } from './edit/defaults.ts';
+export { createDocument } from './edit/newDocument.ts';
 export { minimalTextEdit, type TextEdit } from './edit/textEdit.ts';
 export {
   formatValue,

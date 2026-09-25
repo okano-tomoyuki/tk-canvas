@@ -22,7 +22,7 @@ describe('generateCpp', () => {
     await expect(source.text).toMatchFileSnapshot('../__golden__/main_window.cpp');
   });
 
-  it('Toplevel は親を受け取り、run を持たない', async () => {
+  it('Toplevel は親を受け取る', async () => {
     const doc = {
       ...CPP_SAMPLE,
       root: { ...SAMPLE.root, class: 'tk.Toplevel' as const, window: { title: 'Dialog' } },
@@ -31,6 +31,42 @@ describe('generateCpp', () => {
     if ('error' in result || !result.header.ok || !result.source.ok) throw new Error('failed');
     await expect(result.header.text).toMatchFileSnapshot('../__golden__/dialog.hpp');
     await expect(result.source.text).toMatchFileSnapshot('../__golden__/dialog.cpp');
+  });
+
+  it('Frame をルートにした部品（ゴールデンファイルと比較）', async () => {
+    const doc = {
+      ...CPP_SAMPLE,
+      root: {
+        ...SAMPLE.root,
+        class: 'ttk.Labelframe' as const,
+        window: undefined,
+        options: { text: 'Settings', padding: 8 },
+        bindings: [{ sequence: '<Configure>', handler: 'on_resize' }],
+      },
+    };
+    const result = generateCpp(doc, 'settings_panel.tkui.json', undefined, undefined);
+    if ('error' in result || !result.header.ok || !result.source.ok) throw new Error('failed');
+    await expect(result.header.text).toMatchFileSnapshot('../__golden__/settings_panel.hpp');
+    await expect(result.source.text).toMatchFileSnapshot('../__golden__/settings_panel.cpp');
+  });
+
+  it('既存のヘッダの基底クラスがルートと違えば書き込まない', () => {
+    const initial = generate();
+    const doc = {
+      ...CPP_SAMPLE,
+      root: { ...SAMPLE.root, class: 'tk.Frame' as const, window: undefined },
+    };
+    const result = generateCpp(
+      doc,
+      'main_window.tkui.json',
+      initial.header.text,
+      initial.source.text,
+    );
+    if ('error' in result) throw new Error(result.error);
+    expect(result.header.ok).toBe(false);
+    expect(!result.header.ok && result.header.error).toContain(
+      '基底クラスが cpp_tk::Tk ですが、DSL のルートは cpp_tk::Frame です',
+    );
   });
 
   it('再生成しても変わらず、ソースの区間外のコードは残す', () => {
@@ -59,10 +95,10 @@ describe('generateCpp', () => {
     expect(again.source.text).toContain('void MainWindow::on_resize(const tk::Event& event)');
   });
 
-  it('tk.Tk の生成時にしか指定できないオプションは警告する', () => {
+  it('ルートの生成時にしか指定できないオプションは警告する', () => {
     const doc = { ...CPP_SAMPLE, root: { ...SAMPLE.root, options: { class: 'MyApp' } } };
     expect(generate(doc).warnings).toEqual([
-      'main_window: class は tk.Tk の生成時にしか指定できないため、C++ では反映されません',
+      'main_window: class は生成時にしか指定できないため、生成したコードには反映されません（生成したクラスのコンストラクタ引数で指定してください）',
     ]);
   });
 });

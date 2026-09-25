@@ -5,7 +5,7 @@
 import type { TkuiDocument } from '@tk-designer/core';
 import { emitCpp } from './cpp/emit.ts';
 import { cppSyntax } from './cpp/syntax.ts';
-import { buildModel } from './model.ts';
+import { buildModel, rootWarnings } from './model.ts';
 import { fileNameOf, relativePath, resolveTargets } from './names.ts';
 import { emitPython } from './python/emit.ts';
 import { PYTHON_SYNTAX } from './python/syntax.ts';
@@ -95,7 +95,7 @@ export function generateCpp(
   return {
     header: generate(files.header, existingHeader, target.header),
     source: generate(files.source, existingSource, target.source),
-    warnings: files.warnings,
+    warnings: rootWarnings(doc),
   };
 }
 
@@ -125,7 +125,6 @@ export function generateAll(
     return { error: 'codegen が設定されていません（例: "codegen": { "python": {} }）' };
   }
   const files: OutputFile[] = [];
-  const warnings: string[] = [];
   if (targets.python) {
     const result = generatePython(doc, dslFileName, readExisting(targets.python.file));
     files.push({ path: targets.python.file, result });
@@ -140,7 +139,6 @@ export function generateAll(
     if ('error' in result) return result;
     files.push({ path: targets.cpp.header, result: result.header });
     files.push({ path: targets.cpp.source, result: result.source });
-    warnings.push(...result.warnings);
   }
-  return { files, warnings };
+  return { files, warnings: rootWarnings(doc) };
 }

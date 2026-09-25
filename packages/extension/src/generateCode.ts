@@ -1,10 +1,10 @@
 /**
- * コード生成（docs/adr/0010、docs/codegen-design.md）。デザイナーの「コード生成」ボタンから呼ばれる。
+ * コード生成（docs/adr/0010、docs/codegen-design.md）。デザイナーのコード生成の画面の「生成する」ボタンから呼ばれる。
+ * 生成する言語・クラス名・出力先は、その画面で DSL の codegen に設定しておく。
  */
 import { generateAll, resolveTargets, type OutputFile } from '@tk-designer/codegen';
-import { hasErrors, parseDocument, type CodegenSettings } from '@tk-designer/core';
+import { hasErrors, parseDocument } from '@tk-designer/core';
 import * as vscode from 'vscode';
-import { applyEditCommand } from './applyEditCommand.ts';
 
 export async function generateCode(document: vscode.TextDocument): Promise<void> {
   const parsed = parseDocument(document.getText());
@@ -16,20 +16,11 @@ export async function generateCode(document: vscode.TextDocument): Promise<void>
   }
 
   const fileName = document.uri.path.split('/').pop() ?? 'ui.tkui.json';
-  let doc = parsed.document;
-  let targets = resolveTargets(doc, fileName);
-
-  // 生成先が未設定なら、どの言語で生成するかを選んでもらい、DSL の codegen に追加する
+  const doc = parsed.document;
+  const targets = resolveTargets(doc, fileName);
   if (!targets.python && !targets.cpp) {
-    const codegen = await pickTargets();
-    if (!codegen) return;
-    const result = await applyEditCommand(document, { type: 'setCodegen', codegen });
-    if (!result.ok) {
-      void vscode.window.showErrorMessage(result.error);
-      return;
-    }
-    doc = parseDocument(document.getText()).document ?? doc;
-    targets = resolveTargets(doc, fileName);
+    void vscode.window.showErrorMessage('生成する言語が選ばれていません。');
+    return;
   }
 
   // 出力先の既存の内容を先に読んでおく（生成は同期的に行う）
@@ -102,20 +93,6 @@ export async function generateCode(document: vscode.TextDocument): Promise<void>
       });
     }
   }
-}
-
-/** 生成する言語を選んでもらう。取り消されたら undefined */
-async function pickTargets(): Promise<CodegenSettings | undefined> {
-  const items: (vscode.QuickPickItem & { codegen: CodegenSettings })[] = [
-    { label: 'Python（tkinter）', description: '<名前>.py', codegen: { python: {} } },
-    { label: 'C++（cpp_tk）', description: '<名前>.hpp / <名前>.cpp', codegen: { cpp: {} } },
-    { label: 'Python と C++ の両方', codegen: { python: {}, cpp: {} } },
-  ];
-  const picked = await vscode.window.showQuickPick(items, {
-    title:
-      '生成先が設定されていません。生成する言語を選んでください（DSL の codegen に追加します）',
-  });
-  return picked?.codegen;
 }
 
 /** 開いている（未保存の変更を含む）内容、なければファイルの内容。ファイルがなければ undefined */
